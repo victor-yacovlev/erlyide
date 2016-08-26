@@ -61,6 +61,7 @@ public class MainWindowController implements Initializable {
     private static final String PREFS_WINDOW_ISSUES_VISIBLE = "MainWindow/IssuesVisible";
     private static final String PREFS_WINDOW_EVENTS_VISIBLE = "MainWindow/EventsVisible";
     private static final String PREFS_WINDOW_PROJECT_VISIBLE = "MainWindow/ProjectsVisible";
+    private static final String PREFS_WINDOW_MAXIMIZED = "MainWindow/Maximized";
     private final Preferences preferences = Preferences.userNodeForPackage(MainWindowController.class);
 
     private DragonConsole console;
@@ -320,12 +321,14 @@ public class MainWindowController implements Initializable {
     public void loadSettings() {
         int x = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/x", 0);
         int y = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/y", 0);
-        int w = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/w", 500);
-        int h = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/h", 400);
+        int w = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/w", 800);
+        int h = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/h", 600);
+        boolean maximized = preferences.getBoolean(PREFS_WINDOW_MAXIMIZED, false);
         stage.setWidth(w);
         stage.setHeight(h);
         stage.setX(x);
         stage.setY(y);
+        stage.setMaximized(maximized);
         Platform.runLater(() -> {
             boolean issuesVisible = preferences.getBoolean(PREFS_WINDOW_ISSUES_VISIBLE, false);
             boolean eventsVisible = preferences.getBoolean(PREFS_WINDOW_EVENTS_VISIBLE, false);
@@ -343,6 +346,7 @@ public class MainWindowController implements Initializable {
         preferences.putBoolean(PREFS_WINDOW_ISSUES_VISIBLE, isIssuesVisible());
         preferences.putBoolean(PREFS_WINDOW_EVENTS_VISIBLE, isEventsVisible());
         preferences.putBoolean(PREFS_WINDOW_PROJECT_VISIBLE, isProjectVisible());
+        preferences.putBoolean(PREFS_WINDOW_MAXIMIZED, stage.isMaximized());
         if (isProjectVisible()) {
             preferences.putDouble(PREFS_WINDOW_LEFT_DIVIDER_POSITION, leftSplitPane.getDividerPositions()[0]);
         }
@@ -397,7 +401,7 @@ public class MainWindowController implements Initializable {
         if (!issuesVisible && !eventsVisible) {
             double dividerPosition = bottomSplitPane.getDividerPositions()[0];
             preferences.putDouble(PREFS_WINDOW_BOTTOM_DIVIDER_POSITION, dividerPosition);
-            bottomSplitPane.setDividerPositions(1.0);
+            bottomSplitPane.setDividerPosition(0, 1.0);
             bottomSplitPane.lookupAll(".split-pane-divider").stream().forEach((Node div) -> {
                 Node parent = div.parentProperty().get();
                 if (parent == bottomSplitPane) {
