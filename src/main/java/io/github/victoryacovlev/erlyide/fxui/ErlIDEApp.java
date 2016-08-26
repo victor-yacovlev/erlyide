@@ -45,7 +45,7 @@ public class ErlIDEApp extends Application {
 //        dialog.setTitle(mainWindowController.APPLICATION_TITLE);
 //        dialog.pack();
 
-        String workspaceToUse = "~/ErlangWorkspace";
+        String workspaceToUse = System.getenv("HOME")+"/ErlangWorkspace";
 
 //        if (!dialog.isShownOnLaunch() && !dialog.getLastUsedDirectory().isEmpty()) {
 //            workspaceToUse = dialog.getLastUsedDirectory();
