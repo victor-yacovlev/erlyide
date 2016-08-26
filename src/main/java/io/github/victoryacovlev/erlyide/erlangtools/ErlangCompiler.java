@@ -17,7 +17,6 @@
 package io.github.victoryacovlev.erlyide.erlangtools;
 
 import com.ericsson.otp.erlang.*;
-import io.github.victoryacovlev.erlyide.ErlangVM;
 
 import java.io.File;
 import java.io.IOException;

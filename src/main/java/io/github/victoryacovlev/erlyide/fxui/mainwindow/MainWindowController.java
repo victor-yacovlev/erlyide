@@ -17,7 +17,7 @@
 package io.github.victoryacovlev.erlyide.fxui.mainwindow;
 
 import com.eleet.dragonconsole.DragonConsole;
-import io.github.victoryacovlev.erlyide.ErlangVM;
+import io.github.victoryacovlev.erlyide.erlangtools.ErlangVM;
 import io.github.victoryacovlev.erlyide.erlangtools.CompileResult;
 import io.github.victoryacovlev.erlyide.erlangtools.ErlErrorInfo;
 import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuildFinishedEvent;

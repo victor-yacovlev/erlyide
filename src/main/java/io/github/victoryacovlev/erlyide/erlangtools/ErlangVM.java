@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.victoryacovlev.erlyide;
+package io.github.victoryacovlev.erlyide.erlangtools;
 
 import com.ericsson.otp.erlang.*;
 import io.github.victoryacovlev.erlyide.ui.shell.Interpreter;

@@ -19,7 +19,6 @@ package io.github.victoryacovlev.erlyide.fxui;
 
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.MainWindowController;
-import io.github.victoryacovlev.erlyide.ui.WorkspaceChooser;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -41,20 +40,20 @@ public class ErlIDEApp extends Application {
                 System.gc();
         });
 
-        WorkspaceChooser dialog = new WorkspaceChooser();
-        dialog.restoreSettings();
-        dialog.setTitle(mainWindowController.APPLICATION_TITLE);
-        dialog.pack();
+//        WorkspaceChooser dialog = new WorkspaceChooser();
+//        dialog.restoreSettings();
+//        dialog.setTitle(mainWindowController.APPLICATION_TITLE);
+//        dialog.pack();
 
-        String workspaceToUse = null;
+        String workspaceToUse = "~/ErlangWorkspace";
 
-        if (!dialog.isShownOnLaunch() && !dialog.getLastUsedDirectory().isEmpty()) {
-            workspaceToUse = dialog.getLastUsedDirectory();
-        }
-        else {
-            dialog.setVisible(true);
-            workspaceToUse = dialog.getSelectedDirectory();
-        }
+//        if (!dialog.isShownOnLaunch() && !dialog.getLastUsedDirectory().isEmpty()) {
+//            workspaceToUse = dialog.getLastUsedDirectory();
+//        }
+//        else {
+//            dialog.setVisible(true);
+//            workspaceToUse = dialog.getSelectedDirectory();
+//        }
         if (null == workspaceToUse) {
             System.exit(0);
         }

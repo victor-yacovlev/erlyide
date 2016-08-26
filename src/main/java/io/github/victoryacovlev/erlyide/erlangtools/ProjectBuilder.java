@@ -17,7 +17,6 @@
 package io.github.victoryacovlev.erlyide.erlangtools;
 
 import com.ericsson.otp.erlang.OtpAuthException;
-import io.github.victoryacovlev.erlyide.ErlangVM;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import com.sun.istack.internal.NotNull;
