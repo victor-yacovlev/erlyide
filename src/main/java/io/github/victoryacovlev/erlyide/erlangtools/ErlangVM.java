@@ -18,7 +18,6 @@ package io.github.victoryacovlev.erlyide.erlangtools;
 
 import com.ericsson.otp.erlang.*;
 import io.github.victoryacovlev.erlyide.ui.shell.Interpreter;
-import com.sun.deploy.config.Config;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -57,9 +56,11 @@ public class ErlangVM {
     }
 
     public String getHelpersRootPath() {
-        final String helpersRoot = Config.getCacheDirectory() +
-                "/" + getClass().getName().replace('.', '/')+
-                "/erlang_helper_modules";
+        // TODO make cross-platform implementation without com.sun.deploy.config.Config
+        final String helpersRoot = System.getenv("HOME")+"/.erlyide/helpers";
+//        final String helpersRoot = Config.getCacheDirectory() +
+//                "/" + getClass().getName().replace('.', '/')+
+//                "/erlang_helper_modules";
         return helpersRoot;
     }
 
