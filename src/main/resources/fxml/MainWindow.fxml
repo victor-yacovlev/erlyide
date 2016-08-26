@@ -18,7 +18,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="455.0" prefWidth="623.0" stylesheets="@../styles/MainWindow.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.victoryacovlev.erlide.fxui.mainwindow.MainWindowController">
+<AnchorPane prefHeight="455.0" prefWidth="623.0" stylesheets="@../styles/MainWindow.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.victoryacovlev.erlyide.fxui.mainwindow.MainWindowController">
    <children>
       <BorderPane prefHeight="205.0" prefWidth="205.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>

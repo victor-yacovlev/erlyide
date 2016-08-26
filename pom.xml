@@ -38,7 +38,7 @@
                                 <argument>-createjar</argument>
                                 <argument>-nocss2bin</argument>
                                 <argument>-appclass</argument>
-                                <argument>com.github.victoryacovlev.erlide.fxui.ErlIDEApp</argument>
+                                <argument>io.github.victoryacovlev.erlyide.fxui.ErlIDEApp</argument>
                                 <argument>-srcdir</argument>
                                 <argument>${project.build.directory}/classes</argument>
                                 <argument>-outdir</argument>
