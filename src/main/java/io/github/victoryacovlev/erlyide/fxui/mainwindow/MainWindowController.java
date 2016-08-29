@@ -32,7 +32,6 @@ import io.github.victoryacovlev.erlyide.fxui.logging.Logger;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import io.github.victoryacovlev.erlyide.ui.shell.Interpreter;
-import com.sun.istack.internal.NotNull;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
@@ -304,7 +303,7 @@ public class MainWindowController implements Initializable {
         ProjectBuilder.instance().buildProjectAsync(erlangProject, rootNode);
     }
 
-    private void handleProjectBuildFinished(@NotNull ProjectBuildFinishedEvent event) {
+    private void handleProjectBuildFinished(ProjectBuildFinishedEvent event) {
         if (event.getProject() == erlangProject) {
             CompileResult compileResult = event.getResult();
             Logger.getInstance().clearIssues();

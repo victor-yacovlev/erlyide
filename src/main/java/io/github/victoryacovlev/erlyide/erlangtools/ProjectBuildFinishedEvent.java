@@ -17,7 +17,6 @@
 package io.github.victoryacovlev.erlyide.erlangtools;
 
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
-import com.sun.istack.internal.NotNull;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;
@@ -37,7 +36,7 @@ public class ProjectBuildFinishedEvent extends Event {
         return result;
     }
 
-    public ProjectBuildFinishedEvent(@NotNull ProjectBuilder builder, EventTarget target, @NotNull ErlangProject project, @NotNull CompileResult result) {
+    public ProjectBuildFinishedEvent(ProjectBuilder builder, EventTarget target, ErlangProject project, CompileResult result) {
         super(builder, target, PROJECT_BUILD_FINISHED);
         this.project = project;
         this.result = result;

@@ -19,7 +19,6 @@ package io.github.victoryacovlev.erlyide.erlangtools;
 import com.ericsson.otp.erlang.OtpAuthException;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
-import com.sun.istack.internal.NotNull;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 
@@ -90,7 +89,7 @@ public class ProjectBuilder {
         return new CompileResult(compiledBeamFiles, errorMessages);
     }
 
-    public void buildProjectAsync(@NotNull ErlangProject project, @NotNull EventTarget eventTarget) {
+    public void buildProjectAsync(ErlangProject project, EventTarget eventTarget) {
         buildService.submit(() -> {
             CompileResult result = buildProject(project);
             ProjectBuildFinishedEvent event = new ProjectBuildFinishedEvent(this, null, project, result);

@@ -22,7 +22,6 @@ import io.github.victoryacovlev.erlyide.fxui.editor.FileSavedEvent;
 import io.github.victoryacovlev.erlyide.fxui.editor.ModuleNameChangeEvent;
 import io.github.victoryacovlev.erlyide.fxui.editor.TextEditedEvent;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
-import com.sun.istack.internal.NotNull;
 import javafx.scene.control.Tab;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 
@@ -33,7 +32,7 @@ public class EditorTab extends Tab {
     final ErlangCodeArea editor;
     final VirtualizedScrollPane<ErlangCodeArea> scrollPane;
 
-    public EditorTab(@NotNull ProjectFile projectFile) {
+    public EditorTab(ProjectFile projectFile) {
         super();
         editor = new ErlangCodeArea(projectFile, ErlangCompiler.getInstance());
         scrollPane = new VirtualizedScrollPane<>(editor);

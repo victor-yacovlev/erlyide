@@ -16,8 +16,6 @@
 
 package io.github.victoryacovlev.erlyide.erlangtools;
 
-import com.sun.istack.internal.NotNull;
-import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.event.Event;
 import javafx.event.EventTarget;
@@ -44,7 +42,7 @@ public class ProjectFileRenamedEvent extends Event {
 
     private final String newName;
 
-    public ProjectFileRenamedEvent(@NotNull ProjectFile projectFile, EventTarget target, @NotNull String newName, String oldName) {
+    public ProjectFileRenamedEvent(ProjectFile projectFile, EventTarget target, String newName, String oldName) {
         super(projectFile, target, PROJECT_FILE_RENAMED);
         this.projectFile = projectFile;
         this.oldName = oldName;

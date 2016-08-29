@@ -16,7 +16,6 @@
 
 package io.github.victoryacovlev.erlyide.fxui.editor;
 
-import com.sun.istack.internal.NotNull;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;
@@ -28,14 +27,14 @@ public class ModuleNameChangeEvent extends Event {
     private final String moduleName;
     private final ErlangCodeArea editor;
 
-    public ModuleNameChangeEvent(@NotNull ErlangCodeArea editor, EventTarget target, @NotNull String moduleName) {
+    public ModuleNameChangeEvent(ErlangCodeArea editor, EventTarget target, String moduleName) {
         super(editor, target, MODULE_NAME_CHANGE);
         this.moduleName = moduleName;
         this.editor = editor;
     }
 
-    public @NotNull String getModuleName() {
+    public String getModuleName() {
         return moduleName;
     }
-    public @NotNull ErlangCodeArea getEditor() { return editor; }
+    public ErlangCodeArea getEditor() { return editor; }
 }

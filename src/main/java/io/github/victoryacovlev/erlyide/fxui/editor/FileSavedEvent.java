@@ -16,7 +16,6 @@
 
 package io.github.victoryacovlev.erlyide.fxui.editor;
 
-import com.sun.istack.internal.NotNull;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;
@@ -26,10 +25,10 @@ public class FileSavedEvent extends Event {
             new EventType<>(Event.ANY, "FILE_SAVED");
     private final ErlangCodeArea editor;
 
-    public FileSavedEvent(@NotNull ErlangCodeArea editor, EventTarget target) {
+    public FileSavedEvent(ErlangCodeArea editor, EventTarget target) {
         super(editor, target, FILE_SAVED);
         this.editor = editor;
     }
 
-    public @NotNull ErlangCodeArea getEditor() { return editor; }
+    public ErlangCodeArea getEditor() { return editor; }
 }

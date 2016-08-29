@@ -16,7 +16,6 @@
 
 package io.github.victoryacovlev.erlyide.fxui.editor;
 
-import com.sun.istack.internal.NotNull;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;
@@ -27,10 +26,10 @@ public class TextEditedEvent extends Event {
             new EventType<>(Event.ANY, "TEXT_EDIT");
     private final ErlangCodeArea editor;
 
-    public TextEditedEvent(@NotNull ErlangCodeArea editor, EventTarget target) {
+    public TextEditedEvent(ErlangCodeArea editor, EventTarget target) {
         super(editor, target, TEXT_EDIT);
         this.editor = editor;
     }
 
-    public @NotNull ErlangCodeArea getEditor() { return editor; }
+    public ErlangCodeArea getEditor() { return editor; }
 }
