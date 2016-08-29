@@ -138,28 +138,28 @@ public class MainWindowController implements Initializable {
     private void createTerminal() {
         terminalProxy = new SwingNode();
         shellTab.setContent(terminalProxy);
-        SwingUtilities.invokeLater(() -> {
-            console = new DragonConsole(true, false);
-            terminalProxy.setContent(console);
-            try {
-                ErlangVM vm = ErlangVM.getInstance();
-                Interpreter interpreter = vm.getInterpreter();
-                console.setCommandProcessor(interpreter);
-            } catch (Exception e) {
-                console.appendErrorMessage(e.getMessage());
-                e.printStackTrace();
-            }
-            console.setMacStyle();
-        });
-        terminalProxy.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-//                System.out.println("Focus to proxy");
-                SwingUtilities.invokeLater(() -> {
-//                    System.out.println("Focus to tab console");
-                    console.requestFocus();
-                });
-            }
-        });
+//        SwingUtilities.invokeLater(() -> {
+//            console = new DragonConsole(true, false);
+//            terminalProxy.setContent(console);
+//            try {
+//                ErlangVM vm = ErlangVM.getInstance();
+//                Interpreter interpreter = vm.getInterpreter();
+//                console.setCommandProcessor(interpreter);
+//            } catch (Exception e) {
+//                console.appendErrorMessage(e.getMessage());
+//                e.printStackTrace();
+//            }
+//            console.setMacStyle();
+//        });
+//        terminalProxy.focusedProperty().addListener((observable, oldValue, newValue) -> {
+//            if (newValue) {
+////                System.out.println("Focus to proxy");
+//                SwingUtilities.invokeLater(() -> {
+////                    System.out.println("Focus to tab console");
+//                    console.requestFocus();
+//                });
+//            }
+//        });
 
     }
 
