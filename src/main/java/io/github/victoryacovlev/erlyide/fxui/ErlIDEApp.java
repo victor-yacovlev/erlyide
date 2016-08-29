@@ -18,6 +18,7 @@ package io.github.victoryacovlev.erlyide.fxui;
 
 
 import io.github.victoryacovlev.erlyide.erlangtools.ErlangCompiler;
+import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuilder;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.MainWindowController;
 import javafx.application.Application;
@@ -59,8 +60,14 @@ public class ErlIDEApp extends Application {
         if (null == workspaceToUse) {
             System.exit(0);
         }
-        mainWindowController.setErlangProject(new ErlangProject(workspaceToUse));
+
+
         mainWindowController.loadSettings();
+
+        ErlangProject project = new ErlangProject(workspaceToUse);
+        ProjectBuilder builder = ProjectBuilder.instance();
+        builder.buildProjectAsync(project, mainWindowController.getRoot());
+        mainWindowController.setErlangProject(new ErlangProject(workspaceToUse));
 
         ErlangCompiler.getInstance();
 

@@ -34,6 +34,7 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingNode;
+import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -566,5 +567,9 @@ public class MainWindowController implements Initializable {
 
     public int getPresentationModeFontSize() {
         return preferences.getInt(PREFS_PRESENTATION_FONT_SIZE, 20);
+    }
+
+    public EventTarget getRoot() {
+        return rootNode;
     }
 }
