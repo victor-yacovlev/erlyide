@@ -262,10 +262,28 @@ public class MainWindowController implements Initializable {
     }
 
     public void openProjectFile(ProjectFile projectFile) {
-        EditorTab editorTab = new EditorTab(projectFile);
-        tabPane.getTabs().add(editorTab);
-        tabPane.getSelectionModel().select(editorTab);
-        editorTab.getEditor().requestFocus();
+        EditorTab existingTab = null;
+        for (int i=1; i<tabPane.getTabs().size(); ++i) {
+            Tab tab = tabPane.getTabs().get(i);
+            EditorTab editorTab = (EditorTab) tab;
+            if (editorTab!=null) {
+                ProjectFile editorFile = editorTab.getEditor().getProjectFile();
+                if (editorFile == projectFile) {
+                    existingTab = editorTab;
+                    break;
+                }
+            }
+        }
+        if (existingTab != null) {
+            tabPane.getSelectionModel().select(existingTab);
+            existingTab.getEditor().requestFocus();
+        }
+        else {
+            EditorTab editorTab = new EditorTab(projectFile);
+            tabPane.getTabs().add(editorTab);
+            tabPane.getSelectionModel().select(editorTab);
+            editorTab.getEditor().requestFocus();
+        }
     }
 
     public void saveAll() {
