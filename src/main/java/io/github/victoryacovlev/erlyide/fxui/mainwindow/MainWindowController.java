@@ -17,7 +17,6 @@
 package io.github.victoryacovlev.erlyide.fxui.mainwindow;
 
 import com.eleet.dragonconsole.DragonConsole;
-import io.github.victoryacovlev.erlyide.erlangtools.ErlangVM;
 import io.github.victoryacovlev.erlyide.erlangtools.CompileResult;
 import io.github.victoryacovlev.erlyide.erlangtools.ErlErrorInfo;
 import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuildFinishedEvent;
@@ -31,7 +30,6 @@ import io.github.victoryacovlev.erlyide.fxui.logging.IssuesLogEntry;
 import io.github.victoryacovlev.erlyide.fxui.logging.Logger;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
-import io.github.victoryacovlev.erlyide.ui.shell.Interpreter;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
@@ -43,7 +41,6 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.joda.time.DateTime;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -229,7 +226,7 @@ public class MainWindowController implements Initializable {
         Scanner s = new Scanner(moduleTemplateStream);
         s.useDelimiter("\\A");
         String moduleTemplate = s.next();
-        moduleTemplate = moduleTemplate.replace("?MODULE_NAME", moduleName);
+        moduleTemplate = moduleTemplate.replace("?MODULE_STRING", moduleName);
         createNewSourceFile(moduleName, moduleName + ".erl", moduleTemplate);
     }
 
