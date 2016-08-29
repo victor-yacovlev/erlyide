@@ -30,4 +30,16 @@ public class BuildFinishedEventLogEntry extends EventLogEntry {
         this.errorFiles = withErrors;
         this.warningFiles = withWarnings;
     }
+
+    public List<String> getGeneratedFiles() {
+        return generatedFiles;
+    }
+
+    public List<String> getErrorFiles() {
+        return errorFiles;
+    }
+
+    public List<String> getWarningFiles() {
+        return warningFiles;
+    }
 }

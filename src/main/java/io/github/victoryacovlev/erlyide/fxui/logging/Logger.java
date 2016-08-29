@@ -101,6 +101,10 @@ public class Logger {
     }
 
     public void addEventEntry(EventLogEntry entry) {
+        if (!events.isEmpty()) {
+            EventLogEntry last = events.get(events.size()-1);
+            entry.mergeAfter(last);
+        }
         events.add(entry);
     }
 
@@ -130,7 +134,7 @@ public class Logger {
         TableColumn timeColumn = (TableColumn) view.getColumns().get(0);
         TableColumn messageColumn = (TableColumn) view.getColumns().get(1);
         timeColumn.setCellValueFactory(new PropertyValueFactory<EventLogEntry,String>("posted"));
-        messageColumn.setCellValueFactory(new PropertyValueFactory<EventLogEntry,String>("message"));
+        messageColumn.setCellValueFactory(new PropertyValueFactory<EventLogEntry,String>("longMessage"));
         view.setItems(events);
     }
 

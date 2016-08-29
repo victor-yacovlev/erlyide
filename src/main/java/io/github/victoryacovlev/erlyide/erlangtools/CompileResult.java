@@ -21,6 +21,7 @@ import java.util.List;
 
 public class CompileResult {
     private List<String> outputFileNames;
+    private List<String> upToDateFileNames;
     private List<ErlErrorInfo> errorsAndWarnings;
 
     public CompileResult(String outputFileName, List<ErlErrorInfo> errorsAndWarnings) {
@@ -59,4 +60,12 @@ public class CompileResult {
         return result;
     }
 
+
+    public List<String> getUpToDateFileNames() {
+        return upToDateFileNames;
+    }
+
+    public void setUpToDateFileNames(List<String> upToDateFileNames) {
+        this.upToDateFileNames = upToDateFileNames;
+    }
 }

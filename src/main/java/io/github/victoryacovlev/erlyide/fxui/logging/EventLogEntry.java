@@ -20,31 +20,17 @@ import javafx.beans.property.SimpleStringProperty;
 import org.joda.time.DateTime;
 
 public class EventLogEntry {
-    private final SimpleStringProperty message;
+    private SimpleStringProperty message;
+    private SimpleStringProperty longMessage = null;
     private final SimpleStringProperty posted;
     private final DateTime dateTime;
-    private long timeout;
 
-    public EventLogEntry(String message, long timeout) {
-        this.message = new SimpleStringProperty(message);
-        this.dateTime = DateTime.now();
-        this.timeout = timeout;
-        this.posted = new SimpleStringProperty(dateTime.toLocalTime().toString());
-    }
 
     public EventLogEntry(String message) {
         this.message = new SimpleStringProperty(message);
+        this.longMessage = new SimpleStringProperty(message);
         this.dateTime = DateTime.now();
-        this.timeout = 0;
         this.posted = new SimpleStringProperty(dateTime.toLocalTime().toString());
-    }
-
-    public long getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
     }
 
     public String getMessage() {
@@ -65,5 +51,21 @@ public class EventLogEntry {
 
     public DateTime getDateTime() {
         return dateTime;
+    }
+
+    public String getLongMessage() {
+        return longMessage.get();
+    }
+
+    public SimpleStringProperty longMessageProperty() {
+        return longMessage;
+    }
+
+    public void setLongMessage(String longMessage) {
+        this.longMessage.set(longMessage);
+    }
+
+    public void mergeAfter(EventLogEntry previous) {
+        // To be implemented in clild classes if possible
     }
 }
