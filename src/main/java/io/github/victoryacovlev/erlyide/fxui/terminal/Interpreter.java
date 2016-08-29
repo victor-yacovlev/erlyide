@@ -62,7 +62,7 @@ public class Interpreter extends CommandProcessor {
     public void processCommand(String input) {
         if (null != process) {
             try {
-                output("\n");
+//                output("\n");
                 process.getOutputStream().write(input.getBytes("UTF-8"));
                 process.getOutputStream().write('\n');
                 process.getOutputStream().flush();
