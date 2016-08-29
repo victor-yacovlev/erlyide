@@ -17,6 +17,7 @@
 package io.github.victoryacovlev.erlyide.fxui;
 
 
+import io.github.victoryacovlev.erlyide.erlangtools.ErlangCompiler;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.MainWindowController;
 import javafx.application.Application;
@@ -59,6 +60,9 @@ public class ErlIDEApp extends Application {
         }
         mainWindowController.setErlangProject(new ErlangProject(workspaceToUse));
         mainWindowController.loadSettings();
+
+        ErlangCompiler.getInstance();
+
         mainWindowStage.show();
         mainWindowController.setInitialFocus();
     }
