@@ -18,6 +18,7 @@ package io.github.victoryacovlev.erlyide.fxui.mainwindow;
 
 import com.ericsson.otp.erlang.OtpAuthException;
 import io.github.victoryacovlev.erlyide.erlangtools.*;
+import io.github.victoryacovlev.erlyide.fxui.logging.*;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectFileItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
@@ -25,9 +26,6 @@ import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.fxui.editor.ErlangCodeArea;
-import io.github.victoryacovlev.erlyide.fxui.logging.EventLogEntry;
-import io.github.victoryacovlev.erlyide.fxui.logging.IssuesLogEntry;
-import io.github.victoryacovlev.erlyide.fxui.logging.Logger;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.application.Platform;
@@ -46,8 +44,7 @@ import org.joda.time.DateTime;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.Scanner;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -306,15 +303,26 @@ public class MainWindowController implements Initializable {
     @FXML
     public void saveAllCompileAndReload() {
         saveAll();
-        Logger.getInstance().addEventEntry(new EventLogEntry("Building project..."));
+        Logger.getInstance().addEventEntry(new BuildStartedEventLogEntry());
         ProjectBuilder.instance().buildProjectAsync(erlangProject, rootNode);
     }
 
     private void handleProjectBuildFinished(ProjectBuildFinishedEvent event) {
         if (event.getProject() == erlangProject) {
             CompileResult compileResult = event.getResult();
+            Set<String> errorModules = new HashSet<>();
+            Set<String> warningModules = new HashSet<>();
             Logger.getInstance().clearIssues();
             for (ErlErrorInfo errorInfo : compileResult.getErrorsAndWarnings()) {
+                String moduleName = errorInfo.moduleFileName;
+                boolean moduleIsError = errorModules.contains(moduleName);
+                if (errorInfo.type==ErlErrorInfo.ERROR) {
+                    errorModules.add(moduleName);
+                }
+                else if (errorInfo.type==ErlErrorInfo.WARNNING) {
+                    if (!moduleIsError)
+                        warningModules.add(moduleName);
+                }
                 Logger.getInstance().addIssueEntry(new IssuesLogEntry(errorInfo));
             }
             for (int i=1; i<tabPane.getTabs().size(); ++i) {
@@ -323,12 +331,24 @@ public class MainWindowController implements Initializable {
                 ErlangCodeArea editor = editorTab.getEditor();
                 editor.fireEvent(event.copyFor(this, editor));
             }
+            BuildFinishedEventLogEntry logEntry = new BuildFinishedEventLogEntry(
+                    compileResult.getOutputFileNames(),
+                    new LinkedList<>(errorModules),
+                    new LinkedList<>(warningModules));
+            Logger.getInstance().addEventEntry(logEntry);
+            if (Logger.getInstance().hasIssues()) {
+                setIssuesVisible(true);
+            }
+            event.consume();
         }
-        Logger.getInstance().addEventEntry(new EventLogEntry("Build finished", 5000));
-        if (Logger.getInstance().hasIssues()) {
-            setIssuesVisible(true);
+    }
+
+    private void handleProjectLoadFinished(ProjectLoadFinishedEvent event) {
+        if (event.getProject() == getErlangProject()) {
+            BeamsLoadedEventLogEntry logEntry = new BeamsLoadedEventLogEntry(event.getReloadedNames(), event.getNotReloadedNames());
+            Logger.getInstance().addEventEntry(logEntry);
+            event.consume();
         }
-        event.consume();
     }
 
     public void setPresentationMode(boolean presentationMode) {
@@ -559,6 +579,7 @@ public class MainWindowController implements Initializable {
     public void setRoot(Node root) {
         this.rootNode = root;
         root.addEventHandler(ProjectBuildFinishedEvent.PROJECT_BUILD_FINISHED, this::handleProjectBuildFinished);
+        root.addEventHandler(ProjectLoadFinishedEvent.PROJECT_LOAD_FINISHED, this::handleProjectLoadFinished);
     }
 
     public int getMainFontSize() {

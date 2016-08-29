@@ -51,6 +51,15 @@ public class ErlangProject extends ProjectFile {
         return ebinDir;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ErlangProject) {
+            ErlangProject other = (ErlangProject) obj;
+            return other.getRootDir().getAbsolutePath().equals(rootDir.getAbsolutePath());
+        }
+        else return super.equals(obj);
+    }
+
     public File getSrcDir() {
         return srcDir;
     }

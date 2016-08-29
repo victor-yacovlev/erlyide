@@ -38,6 +38,7 @@ public class ProjectBuilder {
     private final ExecutorService buildService = Executors.newSingleThreadExecutor();
 
     private static ProjectBuilder singleton = null;
+    private ProjectLoader loader;
 
     public static ProjectBuilder instance() {
         if (singleton==null) {
@@ -94,6 +95,9 @@ public class ProjectBuilder {
             CompileResult result = buildProject(project);
             ProjectBuildFinishedEvent event = new ProjectBuildFinishedEvent(this, null, project, result);
             Event.fireEvent(eventTarget, event);
+            if (loader!=null) {
+                loader.loadProjectChanges(eventTarget);
+            }
         });
     }
 
@@ -121,4 +125,11 @@ public class ProjectBuilder {
         return result;
     }
 
+    public void setLoader(ProjectLoader loader) {
+        this.loader = loader;
+    }
+
+    public ProjectLoader getLoader() {
+        return loader;
+    }
 }
