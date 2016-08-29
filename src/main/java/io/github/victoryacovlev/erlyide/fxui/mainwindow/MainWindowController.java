@@ -32,6 +32,8 @@ import io.github.victoryacovlev.erlyide.fxui.logging.Logger;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -322,7 +324,46 @@ public class MainWindowController implements Initializable {
     public void setStage(Stage stage) {
         this.stage = stage;
         stage.setTitle(APPLICATION_TITLE);
+        stage.setMinWidth(800);
+        stage.setMinHeight(500);
+        stage.heightProperty().addListener((observable, oldValue, newValue) -> {
+            double oldH = oldValue.doubleValue();
+            if (Double.isNaN(oldH)) {
+                return;
+            }
+            double newH = newValue.doubleValue();
+            final double splitRatio = bottomSplitPane.getDividers().get(0).getPosition();
+            final boolean bottomVisible = isIssuesVisible() || isEventsVisible();
+            Platform.runLater(() -> {
+                double newSplitRatio = splitRatio;
+                if (bottomVisible) {
+                    double oldBottomH = oldH * (1.0 - splitRatio);
+                    newSplitRatio = Double.max(0.0, 1.0 - oldBottomH / newH);
+                    if (newSplitRatio > 1.0)
+                        newSplitRatio = 1.0;
+                    if (newSplitRatio < 0.0)
+                        newSplitRatio = 0.0;
+                    bottomSplitPane.getDividers().get(0).setPosition(newSplitRatio);
+                }
+                else {
+                    setBottomPaneVisible(false, false);
+                }
+            });
+        });
+        stage.maximizedProperty().addListener((observable, oldValue, newValue) -> {
+            final boolean bottomVisible = isIssuesVisible() || isEventsVisible();
+            Platform.runLater(() -> {
+                if (bottomVisible) {
+
+                }
+                else {
+                    setBottomPaneVisible(false, false);
+                }
+            });
+        });
     }
+
+
 
     public void loadSettings() {
         int x = preferences.getInt(PREFS_WINDOW_GEOMETRY + "/x", 0);
@@ -407,7 +448,7 @@ public class MainWindowController implements Initializable {
         if (!issuesVisible && !eventsVisible) {
             double dividerPosition = bottomSplitPane.getDividerPositions()[0];
             preferences.putDouble(PREFS_WINDOW_BOTTOM_DIVIDER_POSITION, dividerPosition);
-            bottomSplitPane.setDividerPosition(0, 1.0);
+            bottomSplitPane.getDividers().get(0).setPosition(1.0);
             bottomSplitPane.lookupAll(".split-pane-divider").stream().forEach((Node div) -> {
                 Node parent = div.parentProperty().get();
                 if (parent == bottomSplitPane) {
