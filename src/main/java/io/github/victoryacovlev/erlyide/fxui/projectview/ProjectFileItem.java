@@ -32,6 +32,8 @@ public class ProjectFileItem extends TreeItem<String> {
         projectFile = aprojectFile;
         value = projectFile.nameProperty();
         valueProperty().bindBidirectional(value);
+
+
     }
 
     public ProjectFile getProjectFile() {

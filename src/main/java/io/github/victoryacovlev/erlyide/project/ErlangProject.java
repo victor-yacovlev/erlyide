@@ -32,6 +32,7 @@ public class ErlangProject extends ProjectFile {
         return appsDir;
     }
 
+
     public enum StructureType {
         OtpWithApps, SimpleOtp, PlainFolder;
     }
@@ -220,6 +221,13 @@ public class ErlangProject extends ProjectFile {
 
     private void parseRebarConfig() {
 
+    }
+
+    public void removeFile(ProjectFile projectFile) {
+        if (sourceFiles.contains(projectFile)) {
+            sourceFiles.remove(projectFile);
+            projectFile.getFile().delete();
+        }
     }
 
 }

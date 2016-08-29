@@ -23,6 +23,7 @@ import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuildFinishedEvent;
 import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuilder;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectFileItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
+import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.fxui.editor.ErlangCodeArea;
 import io.github.victoryacovlev.erlyide.fxui.logging.EventLogEntry;
@@ -77,6 +78,8 @@ public class MainWindowController implements Initializable {
     @FXML private Label showProjectButton;
     @FXML private TreeView projectView;
 
+    private ProjectViewController projectViewController;
+
     private Stage stage;
     private int untitledIndex = 0;
     private ErlangProject erlangProject = null;
@@ -118,18 +121,7 @@ public class MainWindowController implements Initializable {
         Logger.getInstance().addEventsTableView(eventsView);
         Logger.getInstance().addLastEventView(showEventButton);
 
-        projectView.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            if (event.getClickCount() == 2) {
-                Object obj = projectView.getSelectionModel().getSelectedItem();
-                if (obj == null) return;
-                if (obj instanceof ProjectFileItem) {
-                    ProjectFileItem pfi = (ProjectFileItem) obj;
-                    ProjectFile projectFile = pfi.getProjectFile();
-                    openProjectFile(projectFile);
-                }
-
-            }
-        });
+        projectViewController = new ProjectViewController(projectView, this);
     }
 
     private void createTerminal() {
