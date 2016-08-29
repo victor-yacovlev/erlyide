@@ -18,20 +18,16 @@ package io.github.victoryacovlev.erlyide.fxui.mainwindow;
 
 import com.ericsson.otp.erlang.OtpAuthException;
 import io.github.victoryacovlev.erlyide.erlangtools.*;
+import io.github.victoryacovlev.erlyide.fxui.editor.ErlangCodeArea;
 import io.github.victoryacovlev.erlyide.fxui.logging.*;
-import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectFileItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
 import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
-import io.github.victoryacovlev.erlyide.fxui.editor.ErlangCodeArea;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.embed.swing.SwingNode;
 import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -42,7 +38,9 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.joda.time.DateTime;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
@@ -100,7 +98,6 @@ public class MainWindowController implements Initializable {
         }));
         tabPane.focusedProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue) {
-//                System.out.println("Focus to tab pane");
                 Tab currentTab = tabPane.getSelectionModel().getSelectedItem();
                 currentTab.getContent().requestFocus();
             }
@@ -139,29 +136,6 @@ public class MainWindowController implements Initializable {
         } catch (OtpAuthException e) {
             e.printStackTrace();
         }
-//        SwingUtilities.invokeLater(() -> {
-//            console = new DragonConsole(true, false);
-//            terminalProxy.setContent(console);
-//            try {
-//                ErlangVM vm = ErlangVM.getInstance();
-//                Interpreter interpreter = vm.getInterpreter();
-//                console.setCommandProcessor(interpreter);
-//            } catch (Exception e) {
-//                console.appendErrorMessage(e.getMessage());
-//                e.printStackTrace();
-//            }
-//            console.setMacStyle();
-//        });
-//        terminalProxy.focusedProperty().addListener((observable, oldValue, newValue) -> {
-//            if (newValue) {
-////                System.out.println("Focus to proxy");
-//                SwingUtilities.invokeLater(() -> {
-////                    System.out.println("Focus to tab console");
-//                    console.requestFocus();
-//                });
-//            }
-//        });
-
     }
 
     public void setInitialFocus() {
@@ -194,6 +168,12 @@ public class MainWindowController implements Initializable {
 
     public boolean isPresentationMode() {
         return clock.isVisible();
+    }
+
+    public void setPresentationMode(boolean presentationMode) {
+        clock.setVisible(presentationMode);
+        stage.setFullScreen(presentationMode);
+
     }
 
     @FXML
@@ -349,12 +329,6 @@ public class MainWindowController implements Initializable {
             Logger.getInstance().addEventEntry(logEntry);
             event.consume();
         }
-    }
-
-    public void setPresentationMode(boolean presentationMode) {
-        clock.setVisible(presentationMode);
-        stage.setFullScreen(presentationMode);
-
     }
 
     public void setStage(Stage stage) {
@@ -552,12 +526,12 @@ public class MainWindowController implements Initializable {
         return showIssuesButton.getStyleClass().contains("panel-button-pressed");
     }
 
-    public boolean isEventsVisible() {
-        return showEventButton.getStyleClass().contains("panel-button-pressed");
-    }
-
     public void setIssuesVisible(boolean visible) {
         setBottomPaneVisible(visible, false);
+    }
+
+    public boolean isEventsVisible() {
+        return showEventButton.getStyleClass().contains("panel-button-pressed");
     }
 
     public void setEventsVisible(boolean visible) {
@@ -575,13 +549,6 @@ public class MainWindowController implements Initializable {
         projectView.setShowRoot(true);
     }
 
-
-    public void setRoot(Node root) {
-        this.rootNode = root;
-        root.addEventHandler(ProjectBuildFinishedEvent.PROJECT_BUILD_FINISHED, this::handleProjectBuildFinished);
-        root.addEventHandler(ProjectLoadFinishedEvent.PROJECT_LOAD_FINISHED, this::handleProjectLoadFinished);
-    }
-
     public int getMainFontSize() {
         return preferences.getInt(PREFS_MAIN_FONT_SIZE, 14);
     }
@@ -592,5 +559,11 @@ public class MainWindowController implements Initializable {
 
     public EventTarget getRoot() {
         return rootNode;
+    }
+
+    public void setRoot(Node root) {
+        this.rootNode = root;
+        root.addEventHandler(ProjectBuildFinishedEvent.PROJECT_BUILD_FINISHED, this::handleProjectBuildFinished);
+        root.addEventHandler(ProjectLoadFinishedEvent.PROJECT_LOAD_FINISHED, this::handleProjectLoadFinished);
     }
 }
