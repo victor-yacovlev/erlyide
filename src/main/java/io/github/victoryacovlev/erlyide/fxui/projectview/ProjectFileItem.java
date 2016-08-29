@@ -30,12 +30,7 @@ public class ProjectFileItem extends TreeItem<String> {
 
     public ProjectFileItem(ProjectFile aprojectFile) {
         projectFile = aprojectFile;
-        value = new SimpleStringProperty(projectFile.getName()) {
-            @Override
-            public String get() {
-                return projectFile.getName();
-            }
-        };
+        value = projectFile.nameProperty();
         valueProperty().bindBidirectional(value);
     }
 

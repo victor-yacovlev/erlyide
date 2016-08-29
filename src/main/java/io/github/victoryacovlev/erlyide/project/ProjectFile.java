@@ -16,20 +16,32 @@
 
 package io.github.victoryacovlev.erlyide.project;
 
+import io.github.victoryacovlev.erlyide.erlangtools.ProjectFileRenamedEvent;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.event.EventTarget;
+
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class ProjectFile {
-    protected File file;
+    private SimpleStringProperty name;
 
+    protected File file;
     protected ProjectFile(File file) {
         this.file = file;
-            }
+        this.name = new SimpleStringProperty(file.getName());
+    }
 
-    private void rename(String newName) {
+    public SimpleStringProperty nameProperty() {
+        return name;
+    }
+
+    private String rename(String newName) {
         File f = new File(newName);
         file.renameTo(f);
         file = f;
-        // TODO emit rename event
+        return file.getName();
     }
 
     public File getFile() {
@@ -37,11 +49,12 @@ public abstract class ProjectFile {
     }
 
     public String getName() {
-        return file.getName();
+        return name.get();
     }
 
     public void setName(String newName) {
-        rename(newName);
+        String shortNewName = rename(newName);
+        name.set(shortNewName);
     }
 
 }
