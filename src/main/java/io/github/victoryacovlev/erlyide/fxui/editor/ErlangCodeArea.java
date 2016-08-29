@@ -17,12 +17,14 @@
 package io.github.victoryacovlev.erlyide.fxui.editor;
 
 import io.github.victoryacovlev.erlyide.erlangtools.*;
+import io.github.victoryacovlev.erlyide.fxui.mainwindow.FontSizeAjuctable;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Font;
 import javafx.stage.Popup;
 import org.fxmisc.richtext.*;
 import org.fxmisc.richtext.model.RichTextChange;
@@ -33,10 +35,13 @@ import java.io.*;
 import java.time.Duration;
 import java.util.*;
 
-public class ErlangCodeArea extends CodeArea {
+public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
 
     private final ErlangCompiler erlScan;
     private List<ErlErrorInfo> errors = new LinkedList<>();
+    private int mainFontSize = 12;
+    private int presentationModeFontSize = 16;
+    private boolean presentationMode = false;
 
     public String getModuleName() {
         return moduleName;
@@ -321,4 +326,29 @@ public class ErlangCodeArea extends CodeArea {
     public ProjectFile getProjectFile() {
         return projectFile;
     }
+
+
+    @Override
+    public void setMainFontSize(int fontSize) {
+        this.mainFontSize = fontSize;
+        updateFont();
+    }
+
+    @Override
+    public void setPresentationModeFontSize(int fontSize) {
+        this.presentationModeFontSize = fontSize;
+        updateFont();
+    }
+
+    @Override
+    public void setPresentationMode(boolean presentationMode) {
+        this.presentationMode = presentationMode;
+        updateFont();
+    }
+
+    private void updateFont() {
+        int size = presentationMode ? presentationModeFontSize : mainFontSize;
+        setStyle("-fx-font-size: " + Integer.toString(size) + "; -fx-font-family: monospace;");
+    }
+
 }

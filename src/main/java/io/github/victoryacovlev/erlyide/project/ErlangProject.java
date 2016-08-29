@@ -34,7 +34,7 @@ public class ErlangProject extends ProjectFile {
 
 
     public enum StructureType {
-        OtpWithApps, SimpleOtp, PlainFolder;
+        OtpWithApps, SimpleOtp, PlainFolder
     }
 
     private StructureType structureType;

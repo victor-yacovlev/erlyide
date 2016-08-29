@@ -17,7 +17,7 @@
 package io.github.victoryacovlev.erlyide.erlangtools;
 
 import com.ericsson.otp.erlang.*;
-import io.github.victoryacovlev.erlyide.ui.shell.Interpreter;
+import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;

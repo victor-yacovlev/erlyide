@@ -16,14 +16,13 @@
 
 package io.github.victoryacovlev.erlyide.fxui.mainwindow;
 
-import com.eleet.dragonconsole.DragonConsole;
-import io.github.victoryacovlev.erlyide.erlangtools.CompileResult;
-import io.github.victoryacovlev.erlyide.erlangtools.ErlErrorInfo;
-import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuildFinishedEvent;
-import io.github.victoryacovlev.erlyide.erlangtools.ProjectBuilder;
+import com.ericsson.otp.erlang.OtpAuthException;
+import io.github.victoryacovlev.erlyide.erlangtools.*;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectFileItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
+import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
+import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.fxui.editor.ErlangCodeArea;
 import io.github.victoryacovlev.erlyide.fxui.logging.EventLogEntry;
@@ -61,10 +60,11 @@ public class MainWindowController implements Initializable {
     private static final String PREFS_WINDOW_EVENTS_VISIBLE = "MainWindow/EventsVisible";
     private static final String PREFS_WINDOW_PROJECT_VISIBLE = "MainWindow/ProjectsVisible";
     private static final String PREFS_WINDOW_MAXIMIZED = "MainWindow/Maximized";
+    private static final String PREFS_MAIN_FONT_SIZE = "Font/MainSize";
+    private static final String PREFS_PRESENTATION_FONT_SIZE = "Font/PresentationSize";
     private final Preferences preferences = Preferences.userNodeForPackage(MainWindowController.class);
 
-    private DragonConsole console;
-    private SwingNode terminalProxy;
+    private TerminalFlavouredTextArea terminal;
 
     @FXML private Label clock;
     @FXML private Label labelMemoryUsage;
@@ -127,8 +127,20 @@ public class MainWindowController implements Initializable {
     }
 
     private void createTerminal() {
-        terminalProxy = new SwingNode();
-        shellTab.setContent(terminalProxy);
+        terminal = new TerminalFlavouredTextArea();
+        shellTab.setContent(terminal);
+        try {
+            ErlangVM vm = ErlangVM.getInstance();
+            Interpreter interpreter = vm.getInterpreter();
+            terminal.setCommandProcessor(interpreter);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (OtpAuthException e) {
+            e.printStackTrace();
+        }
 //        SwingUtilities.invokeLater(() -> {
 //            console = new DragonConsole(true, false);
 //            terminalProxy.setContent(console);
@@ -156,7 +168,7 @@ public class MainWindowController implements Initializable {
 
     public void setInitialFocus() {
         Platform.runLater(() -> {
-            terminalProxy.requestFocus();
+            terminal.requestFocus();
         });
     }
 
@@ -272,6 +284,9 @@ public class MainWindowController implements Initializable {
             EditorTab editorTab = new EditorTab(projectFile);
             tabPane.getTabs().add(editorTab);
             tabPane.getSelectionModel().select(editorTab);
+            editorTab.getEditor().setMainFontSize(getMainFontSize());
+            editorTab.getEditor().setPresentationModeFontSize(getPresentationModeFontSize());
+            editorTab.getEditor().setPresentationMode(isPresentationMode());
             editorTab.getEditor().requestFocus();
         }
     }
@@ -376,6 +391,7 @@ public class MainWindowController implements Initializable {
         stage.setX(x);
         stage.setY(y);
         stage.setMaximized(maximized);
+        updateFontSizes();
         Platform.runLater(() -> {
             boolean issuesVisible = preferences.getBoolean(PREFS_WINDOW_ISSUES_VISIBLE, false);
             boolean eventsVisible = preferences.getBoolean(PREFS_WINDOW_EVENTS_VISIBLE, false);
@@ -383,6 +399,16 @@ public class MainWindowController implements Initializable {
             setBottomPaneVisible(issuesVisible, eventsVisible);
             setLeftPaneVisible(projectVisible);
         });
+    }
+
+    private void updateFontSizes() {
+        for (int i=1; i<tabPane.getTabs().size(); ++i) {
+            EditorTab editorTab = (EditorTab) (tabPane.getTabs().get(i));
+            editorTab.getEditor().setMainFontSize(getMainFontSize());
+            editorTab.getEditor().setPresentationModeFontSize(getPresentationModeFontSize());
+        }
+        terminal.setMainFontSize(getMainFontSize());
+        terminal.setPresentationModeFontSize(getPresentationModeFontSize());
     }
 
     public void saveSettings() {
@@ -534,4 +560,11 @@ public class MainWindowController implements Initializable {
         root.addEventHandler(ProjectBuildFinishedEvent.PROJECT_BUILD_FINISHED, this::handleProjectBuildFinished);
     }
 
+    public int getMainFontSize() {
+        return preferences.getInt(PREFS_MAIN_FONT_SIZE, 14);
+    }
+
+    public int getPresentationModeFontSize() {
+        return preferences.getInt(PREFS_PRESENTATION_FONT_SIZE, 20);
+    }
 }

@@ -69,11 +69,13 @@
                     <execution>
                         <id>default-cli</id>
                         <goals>
-                            <goal>exec</goal>                            
+                            <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>${java.home}/bin/java</executable>
+                            <!--suppress MavenModelInspection -->
                             <commandlineArgs>${runfx.args}</commandlineArgs>
+                            <!--suppress MavenModelInspection -->
                             <mainClass>${mainClass}</mainClass>
                         </configuration>
                     </execution>
@@ -133,13 +135,6 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         
         <dependency>
@@ -152,12 +147,6 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.9.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.incongru.com.eleet</groupId>
-            <artifactId>dragonconsole</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>

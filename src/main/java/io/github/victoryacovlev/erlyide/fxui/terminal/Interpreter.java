@@ -14,10 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.victoryacovlev.erlyide.ui.shell;
-
-import com.eleet.dragonconsole.CommandProcessor;
-import com.eleet.dragonconsole.DragonConsole;
+package io.github.victoryacovlev.erlyide.fxui.terminal;
 
 import java.io.*;
 
@@ -92,7 +89,7 @@ public class Interpreter extends CommandProcessor {
             this.thread = new Thread(() -> {
                 char[] buffer = new char[1000];
                 while (true) {
-                    DragonConsole console = getConsole();
+                    TerminalFlavouredTextArea console = getConsole();
                     try {
                         if (null != console) {
                             try {
@@ -103,12 +100,11 @@ public class Interpreter extends CommandProcessor {
                                         justStarted = false;
                                         text = text.replace("(abort with ^G)", "");
                                     }
-                                    text = text.replace("&", "&&");
                                     if (2 == fd) {
                                         outputError(text);
                                     }
                                     else {
-                                        output("&bw"+text);
+                                        output(text);
                                     }
                                 }
                             } catch (IOException e) {
