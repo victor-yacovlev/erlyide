@@ -29,6 +29,9 @@ public class BuildFinishedEventLogEntry extends EventLogEntry {
         this.generatedFiles = generated;
         this.errorFiles = withErrors;
         this.warningFiles = withWarnings;
+        if (generated.isEmpty() && errorFiles.isEmpty()) {
+            messageProperty().set("Build finished. Everything up-to-date");
+        }
     }
 
     public List<String> getGeneratedFiles() {
