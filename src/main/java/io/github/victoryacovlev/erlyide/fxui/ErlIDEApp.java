@@ -65,7 +65,7 @@ public class ErlIDEApp extends Application {
 
         mainWindowController.loadSettings();
 
-        ErlangProject project = new ErlangProject(workspaceToUse);
+        ErlangProject project = new ErlangProject(workspaceToUse, null);
         ProjectBuilder builder = ProjectBuilder.instance();
         ProjectLoader projectLoader = ProjectLoader.getInstance(project);
         builder.setLoader(projectLoader);

@@ -17,6 +17,7 @@
 package io.github.victoryacovlev.erlyide.erlangtools;
 
 import com.ericsson.otp.erlang.OtpAuthException;
+import io.github.victoryacovlev.erlyide.project.ErlangIncludeFile;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import javafx.event.Event;
@@ -119,6 +120,32 @@ public class ProjectBuilder {
                 long binaryTimeStamp = outFile.lastModified();
                 if (sourceTimeStamp > binaryTimeStamp) {
                     result.add(sourceFile.getAbsolutePath());
+                }
+            }
+        }
+        List<ErlangIncludeFile> includeFiles = project.getIncludeFiles();
+        for (int i=0; i<includeFiles.size(); ++i) {
+            ErlangIncludeFile includeFile = includeFiles.get(i);
+
+            for (int j=0; j<includeFile.getUsages().size(); ++j) {
+                ErlangSourceFile relatedSourceFile = includeFile.getUsages().get(j);
+                final File sourceFile = relatedSourceFile.getFile();
+                final String baseName = sourceFile.getName();
+                final int dotPos = baseName.lastIndexOf('.');
+                final String moduleName = baseName.substring(0, dotPos);
+                final File outFile = new File(binaryDir.getAbsolutePath() + "/" + moduleName + ".beam");
+                if (!outFile.exists()) {
+                     // Do nothing - this file already in list
+                }
+                else {
+                    long sourceTimeStamp = includeFile.getFile().lastModified();
+                    long binaryTimeStamp = outFile.lastModified();
+                    if (sourceTimeStamp > binaryTimeStamp) {
+                        String path = sourceFile.getAbsolutePath();
+                        if (!result.contains(path)) {
+                            result.add(sourceFile.getAbsolutePath());
+                        }
+                    }
                 }
             }
         }

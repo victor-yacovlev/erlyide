@@ -16,7 +16,10 @@
 
 package io.github.victoryacovlev.erlyide.project;
 
+import io.github.victoryacovlev.erlyide.erlangtools.ErlangCompiler;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import java.io.*;
@@ -75,6 +78,7 @@ public class ErlangProject extends ProjectFile {
     public ObservableList getSourceFiles() {
         return sourceFiles;
     }
+    public ObservableList getIncludeFiles() { return includeFiles; }
 
     private File rootDir;
     private File ebinDir;
@@ -100,10 +104,12 @@ public class ErlangProject extends ProjectFile {
 
     private List<String> deps = Collections.synchronizedList(new LinkedList<>());
     private ObservableList<ErlangSourceFile> sourceFiles = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+    private ObservableList<ErlangIncludeFile> includeFiles = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+    private ObservableList<ProjectFile> otherFiles = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
 //    private ObservableList<ErlangSourceFile> sourceFiles = FXCollections.observableArrayList();
 
-    public ErlangProject(final String projectRootPath) {
-        super(new File(projectRootPath));
+    public ErlangProject(final String projectRootPath, ErlangProject parent) {
+        super(new File(projectRootPath), parent);
         rootDir = file;
         rootDir.mkdirs();
         rebarConfigFile = new File(rootDir.getAbsolutePath() + "/rebar.config");
@@ -138,7 +144,8 @@ public class ErlangProject extends ProjectFile {
 
         new Thread(() -> {
             while (true) {
-                scanForSourceFilesChanges();
+                scanForSourceFilesChanges(sourceFiles, ".erl", getSrcDir(), ErlangFileType.SourceFile);
+                scanForSourceFilesChanges(includeFiles, ".hrl", getIncludeDir(), ErlangFileType.IncludeFile);
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -148,9 +155,66 @@ public class ErlangProject extends ProjectFile {
         }).start();
     }
 
+    public void scanForIncludes(ErlangSourceFile erlangSourceFile) {
+        String data = erlangSourceFile.readAll();
+        scanForIncludes(erlangSourceFile, data);
+    }
 
-    public ErlangSourceFile createSourceFile(String fileName, String templateContents) {
-        String fullPath = getSrcDir().getAbsolutePath()+"/"+fileName;
+    public void removeSourceFromIncludes(ErlangSourceFile erlangSourceFile) {
+        for (int j=0; j<includeFiles.size(); ++j) {
+            ErlangIncludeFile includeFile = includeFiles.get(j);
+            includeFile.getUsages().remove(erlangSourceFile);
+        }
+    }
+
+    public void scanForIncludes(ErlangSourceFile erlangSourceFile, String data) {
+        List<String> includes = ErlangCompiler.getInstance().scanForIncludeStatements(data);
+        for (ErlangIncludeFile includeFile : includeFiles) {
+            String fullPath = includeFile.getFile().getAbsolutePath();
+            String shortPath = includeFile.getName();
+            if (includes.contains(shortPath) || includes.contains(fullPath)) {
+                includeFile.getUsages().add(erlangSourceFile);
+            }
+        }
+    }
+
+    public void scanAllSourcesForInclude(ErlangIncludeFile includeFile) {
+        String fullPath = includeFile.getFile().getAbsolutePath();
+        String shortPath = includeFile.getName();
+        for (ErlangSourceFile sourceFile : sourceFiles) {
+            List<String> includes = ErlangCompiler.getInstance().scanForIncludeStatements(sourceFile.readAll());
+            if (includes.contains(shortPath) || includes.contains(fullPath)) {
+                includeFile.getUsages().add(sourceFile);
+            }
+        }
+    }
+
+    private ProjectFile wrapFileInContainer(File f, ErlangFileType fileType) {
+        ProjectFile createdFile = null;
+        switch (fileType) {
+            case SourceFile:
+                createdFile = new ErlangSourceFile(f, this);
+                scanForIncludes((ErlangSourceFile)createdFile);
+                break;
+            case IncludeFile:
+                createdFile = new ErlangIncludeFile(f, this);
+                scanAllSourcesForInclude((ErlangIncludeFile)createdFile);
+                break;
+            default:
+                break;
+        }
+        return createdFile;
+    }
+
+    public ProjectFile createNewFile(ErlangFileType fileType, String fileName, String templateContents) {
+        File rootDir = null;
+        ObservableList collection = null;
+        switch (fileType) {
+            case SourceFile: rootDir = getSrcDir(); collection = sourceFiles; break;
+            case IncludeFile: rootDir = getIncludeDir(); collection = includeFiles; break;
+            default: rootDir = getRootDir(); collection = otherFiles;
+        }
+        String fullPath = rootDir.getAbsolutePath()+"/"+fileName;
         try {
             File file = new File(fullPath);
             FileOutputStream fs = new FileOutputStream(file);
@@ -158,9 +222,9 @@ public class ErlangProject extends ProjectFile {
             BufferedWriter bufferedWriter = new BufferedWriter(writer);
             bufferedWriter.write(templateContents);
             bufferedWriter.close();
-            ErlangSourceFile erlangSourceFile = new ErlangSourceFile(file);
-            sourceFiles.add(erlangSourceFile);
-            return erlangSourceFile;
+            ProjectFile createdFile = wrapFileInContainer(file, fileType);
+            collection.add(createdFile);
+            return createdFile;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -189,13 +253,13 @@ public class ErlangProject extends ProjectFile {
         }
     }
 
-    private void scanForSourceFilesChanges() {
-        synchronized (sourceFiles) {
-            File[] listOfFiles = getSrcDir().listFiles(pathname -> pathname.getName().endsWith(".erl"));
-            List newFilesList = new LinkedList(Arrays.asList(listOfFiles));
+    private void scanForSourceFilesChanges(ObservableList collection, String suffix, File root, ErlangFileType fileType) {
+        synchronized (collection) {
+            File[] listOfFiles = root.listFiles(pathname -> pathname.getName().endsWith(suffix));
             LinkedList<ProjectFile> toRemove = new LinkedList<>();
-            LinkedList<ErlangSourceFile> toAdd = new LinkedList<>();
-            for (ProjectFile of : sourceFiles) {
+            LinkedList<ProjectFile> toAdd = new LinkedList<>();
+            for (Object obj : collection) {
+                ProjectFile of = (ProjectFile) obj;
                 boolean found = false;
                 final String ofPath = of.getFile().getAbsolutePath();
                 for (File f : listOfFiles) {
@@ -206,13 +270,17 @@ public class ErlangProject extends ProjectFile {
                     }
                 }
                 if (!found) {
+                    if (of instanceof ErlangSourceFile) {
+                        removeSourceFromIncludes((ErlangSourceFile) of);
+                    }
                     toRemove.add(of);
                 }
             }
             for (File f : listOfFiles) {
                 final String fPath = f.getAbsolutePath();
                 boolean found = false;
-                for (ProjectFile of : sourceFiles) {
+                for (Object obj : collection) {
+                    ProjectFile of = (ProjectFile) obj;
                     final String ofPath = of.getFile().getAbsolutePath();
                     if (ofPath.equals(fPath)) {
                         found = true;
@@ -220,11 +288,12 @@ public class ErlangProject extends ProjectFile {
                     }
                 }
                 if (!found) {
-                    toAdd.add(new ErlangSourceFile(f));
+                    ProjectFile pf = wrapFileInContainer(f, fileType);
+                    toAdd.add(pf);
                 }
             }
-            sourceFiles.removeAll(toRemove);
-            sourceFiles.addAll(toAdd);
+            collection.removeAll(toRemove);
+            collection.addAll(toAdd);
         }
     }
 
@@ -233,10 +302,14 @@ public class ErlangProject extends ProjectFile {
     }
 
     public void removeFile(ProjectFile projectFile) {
-        if (sourceFiles.contains(projectFile)) {
+        if (projectFile instanceof ErlangSourceFile) {
+            removeSourceFromIncludes((ErlangSourceFile) projectFile);
             sourceFiles.remove(projectFile);
-            projectFile.getFile().delete();
         }
+        else if (projectFile instanceof ErlangIncludeFile) {
+            includeFiles.remove(projectFile);
+        }
+        projectFile.getFile().delete();
     }
 
 }

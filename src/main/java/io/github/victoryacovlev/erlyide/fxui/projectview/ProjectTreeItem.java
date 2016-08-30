@@ -20,6 +20,7 @@ import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
@@ -33,43 +34,65 @@ public class ProjectTreeItem extends ProjectFileItem {
     private final ProjectGroupTreeItem deps;
     private final ProjectGroupTreeItem apps;
     private final ProjectGroupTreeItem unsorted;
-    private final ObservableList<TreeItem<String>> groups = FXCollections.observableArrayList();
+
     private final StringProperty value;
+    private final ErlangProject erlangProject;
+
 
     public ProjectTreeItem(ErlangProject project) {
         super(project);
+        this.erlangProject = project;
         sources = new ProjectGroupTreeItem("Sources", project.getSrcDir(), "folder-outline");
         sources.setExpanded(true);
         includes = new ProjectGroupTreeItem("Includes", project.getIncludeDir(), "folder-outline");
+        includes.setExpanded(true);
         resources = new ProjectGroupTreeItem("Resources", project.getPrivDir(), "folder-outline");
         deps = new ProjectGroupTreeItem("Libraries", project.getDepsDir(), "folder-multiple-outline");
         apps = new ProjectGroupTreeItem("Subprojects", project.getAppsDir(), "folder-multiple-outline");
         apps.setExpanded(true);
         unsorted = new ProjectGroupTreeItem("Non-OTP Sources", project.getRootDir(), "folder-outline");
-
-        switch (project.getStructureType()) {
-            case OtpWithApps:
-                groups.addAll(apps, deps);
-                break;
-            case SimpleOtp:
-                sources.bindCollection(project.getSourceFiles());
-                groups.addAll(sources, includes, resources, deps);
-                break;
-            default:
-                groups.add(unsorted);
-                break;
-        }
-
+        sources.bindCollection(project.getSourceFiles());
+        includes.bindCollection(project.getIncludeFiles());
         this.value = new SimpleStringProperty(project.getName()) {
             @Override
             public String get() {
                 return "Project [" + project.getName() + "]";
             }
         };
-
-        super.getChildren().setAll(groups);
         valueProperty().bindBidirectional(value);
         this.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/icons/folder-16px.png"))));
+        if (erlangProject.getStructureType()!= ErlangProject.StructureType.PlainFolder) {
+            setupChildrenOtp();
+            ListChangeListener listener = new ListChangeListener() {
+                @Override
+                public void onChanged(Change c) {
+                    setupChildrenOtp();
+                }
+            };
+            erlangProject.getSourceFiles().addListener(listener);
+            erlangProject.getIncludeFiles().addListener(listener);
+        }
+    }
+
+    private void setupChildrenOtp() {
+        // TODO apps dir
+        ObservableList<TreeItem<String>> groups = FXCollections.observableArrayList();
+        if (erlangProject.getStructureType()== ErlangProject.StructureType.SimpleOtp) {
+            groups.add(sources);  // Sources group always present even empty
+        }
+        else if (erlangProject.getStructureType()== ErlangProject.StructureType.OtpWithApps) {
+            if (!erlangProject.getSourceFiles().isEmpty()) {
+                groups.add(sources);
+            }
+        }
+        if (!erlangProject.getIncludeFiles().isEmpty()) {
+            groups.add(includes);
+        }
+        // TODO resources dir
+        // TODO config files
+        // TODO libraries
+        super.getChildren().clear();
+        super.getChildren().addAll(groups);
     }
 
     @Override

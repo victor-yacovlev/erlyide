@@ -16,18 +16,6 @@
 
 package io.github.victoryacovlev.erlyide.project;
 
-import java.io.File;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedList;
-import java.util.List;
-
-public class ErlangIncludeFile extends ProjectFile {
-    protected ErlangIncludeFile(File file, ErlangProject parent) {
-        super(file, parent);
-    }
-    private List<ErlangSourceFile> usages = new LinkedList<>();
-
-    public List<ErlangSourceFile> getUsages() {
-        return usages;
-    }
+public enum ErlangFileType {
+    SourceFile, IncludeFile, ConfigFile
 }

@@ -19,7 +19,7 @@ package io.github.victoryacovlev.erlyide.project;
 import java.io.File;
 
 public class RebarConfig extends ProjectFile {
-    protected RebarConfig(File file) {
-        super(file);
+    protected RebarConfig(File file, ErlangProject parent) {
+        super(file, parent);
     }
 }

@@ -536,4 +536,24 @@ public class ErlangCompiler {
         }
         return true;
     }
+
+    public List<String> scanForIncludeStatements(String data) {
+        List<String> result = new LinkedList<>();
+        String[] lines = data.split("\n");
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("-include(")) {
+                int startPos = 9;
+                int endPos = line.indexOf(')', startPos);
+                if (-1 != endPos) {
+                    String name = line.substring(startPos, endPos).trim();
+                    if (name.startsWith("\"") && name.endsWith("\"")) {
+                        name = name.substring(1, name.length() - 1);
+                    }
+                    result.add(name);
+                }
+            }
+        }
+        return result;
+    }
 }

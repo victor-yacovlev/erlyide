@@ -24,6 +24,7 @@ import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
 import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
+import io.github.victoryacovlev.erlyide.project.ErlangFileType;
 import io.github.victoryacovlev.erlyide.project.ErlangProject;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
@@ -203,27 +204,44 @@ public class MainWindowController implements Initializable {
     }
 
     @FXML
-    public void fileNew() {
-        final String moduleName = generateUntitledModuleName();
+    public void fileNewSimpleModule() {
+        final String moduleName = generateUntitledModuleName(erlangProject.getSrcDir(), ".erl");
         final String moduleTemplateFileName = "/templates/simple.erl";
         InputStream moduleTemplateStream = getClass().getResourceAsStream(moduleTemplateFileName);
         Scanner s = new Scanner(moduleTemplateStream);
         s.useDelimiter("\\A");
         String moduleTemplate = s.next();
         moduleTemplate = moduleTemplate.replace("?MODULE_STRING", moduleName);
-        createNewSourceFile(moduleName, moduleName + ".erl", moduleTemplate);
+        createNewFile(ErlangFileType.SourceFile, moduleName + ".erl", moduleTemplate);
     }
 
-    private String generateUntitledModuleName() {
-        File srcRoot = erlangProject.getSrcDir();
-        File unnamed = new File(srcRoot.getAbsoluteFile() + "/unnamed.erl");
+    @FXML
+    public void fileNewIncludeFile() {
+        final String moduleName = generateUntitledModuleName(erlangProject.getIncludeDir(), ".hrl");
+        final String moduleTemplateFileName = "/templates/simple.hrl";
+        InputStream moduleTemplateStream = getClass().getResourceAsStream(moduleTemplateFileName);
+        Scanner s = new Scanner(moduleTemplateStream);
+        s.useDelimiter("\\A");
+        String moduleTemplate = s.next();
+        moduleTemplate = moduleTemplate.replace("?FILE_NAME", moduleName.toUpperCase()+"_HRL");
+        createNewFile(ErlangFileType.IncludeFile, moduleName + ".hrl", moduleTemplate);
+    }
+
+    public void createNewFile(ErlangFileType fileType, final String fileName, final String templateContents) {
+        ProjectFile projectFile = erlangProject.createNewFile(fileType, fileName, templateContents);
+        openProjectFile(projectFile);
+    }
+
+
+    private String generateUntitledModuleName(File root, String suffix) {
+        File unnamed = new File(root.getAbsoluteFile() + "/unnamed" + suffix);
         if (!unnamed.exists()) {
             return "unnamed";
         }
         if (0 == untitledIndex)
             untitledIndex = 1;
         while (true) {
-            String path = srcRoot.getAbsolutePath() + String.format("/unnamed_%1$d.erl", untitledIndex);
+            String path = root.getAbsolutePath() + String.format("/unnamed_%1$d", untitledIndex) + suffix;
             File f = new File(path);
             if (!f.exists()) {
                 final String result = String.format("unnamed_%1$d", untitledIndex);
@@ -236,10 +254,7 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    public void createNewSourceFile(final String moduleName, final String fileName, final String templateContents) {
-        ErlangSourceFile projectFile = erlangProject.createSourceFile(fileName, templateContents);
-        openProjectFile(projectFile);
-    }
+
 
     public void openProjectFile(ProjectFile projectFile) {
         EditorTab existingTab = null;

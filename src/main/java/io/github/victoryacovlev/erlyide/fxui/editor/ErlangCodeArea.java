@@ -18,6 +18,8 @@ package io.github.victoryacovlev.erlyide.fxui.editor;
 
 import io.github.victoryacovlev.erlyide.erlangtools.*;
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.FontSizeAjuctable;
+import io.github.victoryacovlev.erlyide.project.ErlangProject;
+import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -201,7 +203,9 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
             int itemEnd = lineStartPos;
             if (lineText.length() > 0) {
                 SplitResult scanResult = erlScan.splitLineIntoLexems(lineText, lineNo+1);
-                extractModuleName(scanResult.tokens, lineText);
+                if (projectFile instanceof ErlangSourceFile) {
+                    extractModuleName(scanResult.tokens, lineText);
+                }
                 for (ErlToken token : scanResult.tokens) {
                     final int start = lineStartPos + token.column - 1;
                     int length = token.text.length();
@@ -269,12 +273,19 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
 
     public void saveFile() {
         final String text = getText();
-        if (moduleName==null) {
+        ErlangProject project = projectFile.getParent();
+        if (projectFile instanceof ErlangSourceFile) {
+            project.scanForIncludes((ErlangSourceFile) projectFile, text);
+        }
+        if (moduleName==null && projectFile instanceof ErlangSourceFile) {
             computeHighlighting(text);
         }
         final String dir = projectFile.getFile().getParent();
         final String name = projectFile.getFile().getName();
-        final String correctName = moduleName + ".erl";
+        String correctName = name;
+        if (projectFile instanceof ErlangSourceFile) {
+            correctName = moduleName + ".erl";
+        }
         final String correctPath = dir + "/" + correctName;
 //        File newFile = new File(correctPath);
         if (name != correctName) {

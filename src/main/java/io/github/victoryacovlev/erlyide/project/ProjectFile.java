@@ -21,16 +21,23 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventTarget;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 public abstract class ProjectFile {
     private SimpleStringProperty name;
 
     protected File file;
-    protected ProjectFile(File file) {
+    private final ErlangProject parent;
+
+    protected ProjectFile(File file, ErlangProject parent) {
         this.file = file;
         this.name = new SimpleStringProperty(file.getName());
+        this.parent = parent;
     }
 
     public SimpleStringProperty nameProperty() {
@@ -55,6 +62,28 @@ public abstract class ProjectFile {
     public void setName(String newName) {
         String shortNewName = rename(newName);
         name.set(shortNewName);
+    }
+
+    public String readAll() {
+        String result = "";
+        if (file!=null && file.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(file);
+                Scanner s = new Scanner(fis);
+                s.useDelimiter("\\A");
+                result = s.next();
+                fis.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    public ErlangProject getParent() {
+        return parent;
     }
 
 }

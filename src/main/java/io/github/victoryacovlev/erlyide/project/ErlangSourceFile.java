@@ -20,7 +20,7 @@ import java.io.File;
 
 public class ErlangSourceFile extends ProjectFile {
 
-    protected ErlangSourceFile(File file) {
-        super(file);
+    protected ErlangSourceFile(File file, ErlangProject parent) {
+        super(file, parent);
     }
 }
