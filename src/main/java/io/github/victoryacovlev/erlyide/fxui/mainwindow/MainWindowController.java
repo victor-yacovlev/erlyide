@@ -386,6 +386,7 @@ public class MainWindowController implements Initializable {
                 }
             });
         });
+        projectViewController.setMainWindowStage(stage);
     }
 
 

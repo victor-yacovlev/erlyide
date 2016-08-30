@@ -17,15 +17,22 @@
 package io.github.victoryacovlev.erlyide.fxui.projectview;
 
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.MainWindowController;
-import io.github.victoryacovlev.erlyide.project.ProjectFile;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class ProjectViewController {
     private final TreeView treeView;
     private final MainWindowController mainWindowController;
+    private Stage mainWindowStage = null;
     private ContextMenu projectFileContextMenu;
+    private RenameDialogController renameDialogController;
+    private Stage renameDialogStage;
 
     private final class TreeCellImpl extends TreeCell {
 
@@ -63,8 +70,35 @@ public class ProjectViewController {
         this.treeView = treeView;
         createContextMenus();
 
+
         this.treeView.setCellFactory(param -> new TreeCellImpl());
         this.mainWindowController = mainWindowController;
+    }
+
+    private void initializeRenameDialog() {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("/fxml/RenameDialog.fxml"));
+        renameDialogStage = new Stage();
+        try {
+            renameDialogStage.setScene(new Scene(loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        renameDialogController = (RenameDialogController) loader.getController();
+        renameDialogController.setStage(renameDialogStage);
+        renameDialogController.initialize();
+        renameDialogStage.setTitle("Rename file");
+        renameDialogStage.initModality(Modality.WINDOW_MODAL);
+        renameDialogStage.initOwner(mainWindowStage);
+        renameDialogStage.setMinWidth(470);
+        renameDialogStage.setMinHeight(180);
+        renameDialogStage.setMaxWidth(470);
+        renameDialogStage.setMaxHeight(180);
+    }
+
+    public void setMainWindowStage(Stage stage) {
+        mainWindowStage = stage;
+        initializeRenameDialog();
     }
 
     private void createContextMenus() {
@@ -83,7 +117,14 @@ public class ProjectViewController {
             }
         });
 
-        projectFileContextMenu = new ContextMenu(openFileItem, new SeparatorMenuItem(), deleteFileItem);
+        MenuItem renameFileItem = new MenuItem("Rename...");
+        renameFileItem.setOnAction(event -> {
+            if (getCurrentItem()!=null) {
+                renameAction(getCurrentItem());
+            }
+        });
+
+        projectFileContextMenu = new ContextMenu(openFileItem, new SeparatorMenuItem(), renameFileItem, deleteFileItem);
 
     }
 
@@ -96,5 +137,10 @@ public class ProjectViewController {
         else {
             return null;
         }
+    }
+
+    private void renameAction(ProjectFileItem item) {
+        renameDialogController.initializeWithItem(item);
+        renameDialogStage.showAndWait();
     }
 }
