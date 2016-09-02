@@ -17,6 +17,7 @@
 package io.github.victoryacovlev.erlyide.fxui.projectview;
 
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.MainWindowController;
+import io.github.victoryacovlev.erlyide.project.ProjectFile;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -31,7 +32,7 @@ public class ProjectViewController {
     private final MainWindowController mainWindowController;
     private Stage mainWindowStage = null;
     private ContextMenu projectFileContextMenu;
-    private RenameDialogController renameDialogController;
+    private FileNameDialogController fileNameDialogController;
     private Stage renameDialogStage;
 
     private final class TreeCellImpl extends TreeCell {
@@ -77,16 +78,16 @@ public class ProjectViewController {
 
     private void initializeRenameDialog() {
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/fxml/RenameDialog.fxml"));
+        loader.setLocation(getClass().getResource("/fxml/FileNameDialog.fxml"));
         renameDialogStage = new Stage();
         try {
             renameDialogStage.setScene(new Scene(loader.load()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        renameDialogController = (RenameDialogController) loader.getController();
-        renameDialogController.setStage(renameDialogStage);
-        renameDialogController.initialize();
+        fileNameDialogController = (FileNameDialogController) loader.getController();
+        fileNameDialogController.setStage(renameDialogStage);
+        fileNameDialogController.initialize();
         renameDialogStage.setTitle("Rename file");
         renameDialogStage.initModality(Modality.WINDOW_MODAL);
         renameDialogStage.initOwner(mainWindowStage);
@@ -140,7 +141,17 @@ public class ProjectViewController {
     }
 
     private void renameAction(ProjectFileItem item) {
-        renameDialogController.initializeWithItem(item);
+        fileNameDialogController.initializeWithItem(item);
         renameDialogStage.showAndWait();
+        if (fileNameDialogController.isAccepted()) {
+            ProjectFile projectFile = item.getProjectFile();
+            String newName = fileNameDialogController.getEnteredName() + fileNameDialogController.getSuffix();
+            String oldName = projectFile.getName();
+            if (! newName.equals(oldName)) {
+                projectFile.setName(newName, fileNameDialogController.isPreprocessItselfSelected(), fileNameDialogController.isUpdateUsagesSelected());
+            }
+        }
     }
+
+
 }

@@ -1,4 +1,4 @@
--ifndef(?FILE_NAME).
--define(?FILE_NAME, 1).
+-ifndef(?FILE_NAME_UPPER_CASE).
+-define(?FILE_NAME_UPPER_CASE, 1).
 
 -endif.

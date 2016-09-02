@@ -26,12 +26,22 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
-public class RenameDialogController {
+public class FileNameDialogController {
+
+
+    public boolean isAccepted() {
+        return accepted;
+    }
+
+    public enum Mode {
+        CreateNewFile, RenameExisitingFile
+    }
 
     private ProjectFileItem projectFileItem;
     private String oldName;
     private Stage stage;
     private boolean accepted;
+    private Mode mode;
 
     @FXML private Label suffix;
     @FXML private TextField newName;
@@ -52,10 +62,30 @@ public class RenameDialogController {
         suffix.setText(suff);
         newName.setText(name);
         error.setText("");
+        setMode(Mode.RenameExisitingFile);
+    }
+
+    void initializeWithSuggestedName(String fileName, File root) {
+        oldName = fileName;
+        int dotPos = oldName.indexOf('.');
+        String name = oldName.substring(0, dotPos);
+        String suff = oldName.substring(dotPos);
+        suffix.setText(suff);
+        newName.setText(name);
+        error.setText("");
+        setMode(Mode.CreateNewFile);
     }
 
     void initialize() {
         newName.textProperty().addListener(((observable, oldValue, newValue) -> checkName()));
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+        if (Mode.CreateNewFile == mode) {
+            preprocessItself.setVisible(false);
+            findUsages.setVisible(false);
+        }
     }
 
     @FXML void okPressed() {
@@ -108,5 +138,21 @@ public class RenameDialogController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    public String getEnteredName() {
+        return newName.getText().trim();
+    }
+
+    public String getSuffix() {
+        return suffix.getText();
+    }
+
+    public boolean isPreprocessItselfSelected() {
+        return preprocessItself.isSelected();
+    }
+
+    public boolean isUpdateUsagesSelected() {
+        return findUsages.isSelected();
     }
 }

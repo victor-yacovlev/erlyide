@@ -1,5 +1,5 @@
 %%% Module fact documentation
--module(?MODULE_STRING).
+-module(?MODULE).
 -export([fac/1]).
 
 -record(state, {id, name}).

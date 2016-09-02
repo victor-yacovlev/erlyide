@@ -26,17 +26,7 @@
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
-                        <Menu mnemonicParsing="false" text="New">
-                          <items>
-                              <MenuItem mnemonicParsing="false" onAction="#fileNewSimpleModule" text="Simple module">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                            <MenuItem mnemonicParsing="false" onAction="#fileNewIncludeFile" text="Include file" />
-                              <MenuItem mnemonicParsing="false" text="From template..." />
-                          </items>
-                        </Menu>
+                        <Menu fx:id="menuFileNew" mnemonicParsing="false" text="New" />
                         <MenuItem disable="true" mnemonicParsing="false" text="Open...">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />

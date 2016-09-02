@@ -24,16 +24,16 @@ import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
 import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
-import io.github.victoryacovlev.erlyide.project.ErlangFileType;
-import io.github.victoryacovlev.erlyide.project.ErlangProject;
-import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
-import io.github.victoryacovlev.erlyide.project.ProjectFile;
+import io.github.victoryacovlev.erlyide.project.*;
 import javafx.application.Platform;
 import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -76,6 +76,7 @@ public class MainWindowController implements Initializable {
     @FXML private Label showIssuesButton;
     @FXML private Label showProjectButton;
     @FXML private TreeView projectView;
+    @FXML private Menu menuFileNew;
 
     private ProjectViewController projectViewController;
 
@@ -120,6 +121,23 @@ public class MainWindowController implements Initializable {
         Logger.getInstance().addLastEventView(showEventButton);
 
         projectViewController = new ProjectViewController(projectView, this);
+
+        for (ErlangFileTemplate t : ErlangFileTemplate.getTemplates()) {
+            if (t==null) {
+                menuFileNew.getItems().add(new SeparatorMenuItem());
+            }
+            else {
+                MenuItem menuItem = new MenuItem(t.getName());
+                menuItem.setOnAction(event -> {
+                    fileNew(t);
+                });
+                if (menuFileNew.getItems().size() == 0) {
+                    // First item is default - can be accessed by Ctrl+N
+                    menuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+                }
+                menuFileNew.getItems().add(menuItem);
+            }
+        }
     }
 
     private void createTerminal() {
@@ -204,31 +222,16 @@ public class MainWindowController implements Initializable {
     }
 
     @FXML
-    public void fileNewSimpleModule() {
-        final String moduleName = generateUntitledModuleName(erlangProject.getSrcDir(), ".erl");
-        final String moduleTemplateFileName = "/templates/simple.erl";
-        InputStream moduleTemplateStream = getClass().getResourceAsStream(moduleTemplateFileName);
-        Scanner s = new Scanner(moduleTemplateStream);
-        s.useDelimiter("\\A");
-        String moduleTemplate = s.next();
-        moduleTemplate = moduleTemplate.replace("?MODULE_STRING", moduleName);
-        createNewFile(ErlangFileType.SourceFile, moduleName + ".erl", moduleTemplate);
-    }
-
-    @FXML
-    public void fileNewIncludeFile() {
-        final String moduleName = generateUntitledModuleName(erlangProject.getIncludeDir(), ".hrl");
-        final String moduleTemplateFileName = "/templates/simple.hrl";
-        InputStream moduleTemplateStream = getClass().getResourceAsStream(moduleTemplateFileName);
-        Scanner s = new Scanner(moduleTemplateStream);
-        s.useDelimiter("\\A");
-        String moduleTemplate = s.next();
-        moduleTemplate = moduleTemplate.replace("?FILE_NAME", moduleName.toUpperCase()+"_HRL");
-        createNewFile(ErlangFileType.IncludeFile, moduleName + ".hrl", moduleTemplate);
-    }
-
-    public void createNewFile(ErlangFileType fileType, final String fileName, final String templateContents) {
-        ProjectFile projectFile = erlangProject.createNewFile(fileType, fileName, templateContents);
+    public void fileNew(ErlangFileTemplate template) {
+        File rootDir = null;
+        if (template instanceof ErlangSourceFileTemplate) {
+            rootDir = erlangProject.getSrcDir();
+        }
+        else if (template instanceof ErlangIncludeFileTemplate) {
+            rootDir = erlangProject.getIncludeDir();
+        }
+        final String moduleName = generateUntitledModuleName(rootDir, template.getSuffix());
+        ProjectFile projectFile = erlangProject.createNewFile(template, moduleName + template.getSuffix());
         openProjectFile(projectFile);
     }
 

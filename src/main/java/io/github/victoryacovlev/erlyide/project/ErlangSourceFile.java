@@ -17,10 +17,45 @@
 package io.github.victoryacovlev.erlyide.project;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ErlangSourceFile extends ProjectFile {
+
+    static final Pattern MODULE_NAME_SEARCH_PATTERN;
+
+    static {
+        MODULE_NAME_SEARCH_PATTERN = Pattern.compile("^\\s*-module\\((\\S+)\\)\\.", Pattern.MULTILINE);
+    }
 
     protected ErlangSourceFile(File file, ErlangProject parent) {
         super(file, parent);
     }
+
+    @Override
+    protected List<ProjectFileChange> preprocessToMatchNewName(String oldName, String newName) {
+        String oldModuleName = oldName.substring(0, oldName.length()-4);
+        String newModuleName = newName.substring(0, newName.length()-4);
+        List<ProjectFileChange> changes = new LinkedList<>();
+        String source = getContents();
+        Matcher matcher = MODULE_NAME_SEARCH_PATTERN.matcher(source);
+        int startPos = 0;
+        while (matcher.find(startPos)) {
+            String matchedSubstring = matcher.group(0);
+            String matchedModuleName = matcher.group(1);
+            if (matchedModuleName.equals(oldModuleName)) {
+                ProjectFileChange change = new ProjectFileChange();
+                change.from = matcher.start(1);
+                change.length = matchedModuleName.length();
+                change.replacement = newModuleName;
+                changes.add(change);
+            }
+            startPos += matchedSubstring.length();
+        }
+        return changes;
+    }
+
+
 }

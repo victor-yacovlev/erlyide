@@ -1,3 +1,3 @@
--module(?MODULE_STRING).
+-module(?MODULE).
 -compile(export_all).
 

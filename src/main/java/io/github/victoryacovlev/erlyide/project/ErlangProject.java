@@ -206,33 +206,25 @@ public class ErlangProject extends ProjectFile {
         return createdFile;
     }
 
-    public ProjectFile createNewFile(ErlangFileType fileType, String fileName, String templateContents) {
+    public ProjectFile createNewFile(ErlangFileTemplate template, String fileName) {
         File rootDir = null;
         ObservableList collection = null;
+        ErlangFileType fileType = null;
+        if (template instanceof ErlangSourceFileTemplate) {
+            fileType = ErlangFileType.SourceFile;
+        }
+        else if (template instanceof ErlangIncludeFileTemplate) {
+            fileType = ErlangFileType.IncludeFile;
+        }
         switch (fileType) {
             case SourceFile: rootDir = getSrcDir(); collection = sourceFiles; break;
             case IncludeFile: rootDir = getIncludeDir(); collection = includeFiles; break;
             default: rootDir = getRootDir(); collection = otherFiles;
         }
-        String fullPath = rootDir.getAbsolutePath()+"/"+fileName;
-        try {
-            File file = new File(fullPath);
-            FileOutputStream fs = new FileOutputStream(file);
-            OutputStreamWriter writer = new OutputStreamWriter(fs, "UTF-8");
-            BufferedWriter bufferedWriter = new BufferedWriter(writer);
-            bufferedWriter.write(templateContents);
-            bufferedWriter.close();
-            ProjectFile createdFile = wrapFileInContainer(file, fileType);
-            collection.add(createdFile);
-            return createdFile;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        File file = template.createFile(rootDir, fileName);
+        ProjectFile createdFile = wrapFileInContainer(file, fileType);
+        collection.add(createdFile);
+        return createdFile;
     }
 
     private void detectStructureType() {

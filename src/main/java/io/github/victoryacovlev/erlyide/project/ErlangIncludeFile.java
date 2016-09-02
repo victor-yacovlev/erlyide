@@ -17,11 +17,20 @@
 package io.github.victoryacovlev.erlyide.project;
 
 import java.io.File;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ErlangIncludeFile extends ProjectFile {
+
+    static final Pattern HEADER_DEFINE_SEARCH_PATTERN;
+
+    static {
+        HEADER_DEFINE_SEARCH_PATTERN = Pattern.compile("^\\s*-(ifndef|define)\\((\\w+)(,.+)?\\)\\.", Pattern.MULTILINE);
+    }
+
+
     protected ErlangIncludeFile(File file, ErlangProject parent) {
         super(file, parent);
     }
@@ -29,5 +38,28 @@ public class ErlangIncludeFile extends ProjectFile {
 
     public List<ErlangSourceFile> getUsages() {
         return usages;
+    }
+
+    @Override
+    protected List<ProjectFileChange> preprocessToMatchNewName(String oldName, String newName) {
+        String oldDefineName = oldName.toUpperCase().replace('.', '_');
+        String newDefineName = newName.toUpperCase().replace('.', '_');
+        List<ProjectFileChange> changes = new LinkedList<>();
+        String source = getContents();
+        Matcher matcher = HEADER_DEFINE_SEARCH_PATTERN.matcher(source);
+        int startPos = 0;
+        while (matcher.find(startPos)) {
+            String matchedSubstring = matcher.group(0);
+            String matchedModuleName = matcher.group(2);
+            if (matchedModuleName.equals(oldDefineName)) {
+                ProjectFileChange change = new ProjectFileChange();
+                change.from = matcher.start(2);
+                change.length = matchedModuleName.length();
+                change.replacement = newDefineName;
+                changes.add(change);
+            }
+            startPos += matchedSubstring.length();
+        }
+        return changes;
     }
 }

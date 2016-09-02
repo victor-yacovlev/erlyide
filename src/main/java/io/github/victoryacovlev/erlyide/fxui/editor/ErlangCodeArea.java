@@ -18,9 +18,7 @@ package io.github.victoryacovlev.erlyide.fxui.editor;
 
 import io.github.victoryacovlev.erlyide.erlangtools.*;
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.FontSizeAjuctable;
-import io.github.victoryacovlev.erlyide.project.ErlangProject;
-import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
-import io.github.victoryacovlev.erlyide.project.ProjectFile;
+import io.github.victoryacovlev.erlyide.project.*;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
@@ -37,7 +35,7 @@ import java.io.*;
 import java.time.Duration;
 import java.util.*;
 
-public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
+public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable, EditingInterface {
 
     private final ErlangCompiler erlScan;
     private List<ErlErrorInfo> errors = new LinkedList<>();
@@ -69,6 +67,7 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
     public ErlangCodeArea(ProjectFile file, ErlangCompiler compiler) {
         super("");
         this.projectFile = file;
+        projectFile.setEditor(this);
         try {
             InputStream initialInputStream = new FileInputStream(this.projectFile.getFile());
             Scanner s = new Scanner(initialInputStream);
@@ -153,6 +152,7 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
         setMouseOverTextDelay(Duration.ofMillis(50));
 
         addEventHandler(ProjectBuildFinishedEvent.PROJECT_BUILD_FINISHED, this::handleProjectBuildFinished);
+
     }
 
     private void handleProjectBuildFinished(ProjectBuildFinishedEvent event) {
@@ -183,6 +183,21 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
         final String text = getText();
         StyleSpans<Collection<String>> highlights = computeHighlighting(text);
         setStyleSpans(0, highlights);
+    }
+
+    public void applyChanges(List<ProjectFileChange> changes) {
+        int offset = 0;
+        for (int i=0; i<changes.size(); ++i) {
+            ProjectFileChange change = changes.get(i);
+            int start = offset + change.from;
+            int end = start + change.length;
+            String newChunk = change.replacement;
+            replaceText(start, end, newChunk);
+            offset += newChunk.length() - change.length;
+        }
+        applyHighlightings();
+        TextEditedEvent event = new TextEditedEvent(this, null);
+        fireEvent(event);
     }
 
     private void handleTextChange(RichTextChange<Collection<String>,Collection<String>> change) {
@@ -287,24 +302,13 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable {
             correctName = moduleName + ".erl";
         }
         final String correctPath = dir + "/" + correctName;
-//        File newFile = new File(correctPath);
-        if (name != correctName) {
-            projectFile.setName(correctPath);
-//            if (projectFile.getFile().exists())
-//                projectFile.getFile().renameTo(newFile);
+        if (! name.equals(correctName)) {
+            projectFile.setName(correctPath, false, false);
         }
-        try {
-            FileOutputStream fs = new FileOutputStream(projectFile.getFile());
-            OutputStreamWriter writer = new OutputStreamWriter(fs, "UTF-8");
-            BufferedWriter bufferedWriter = new BufferedWriter(writer);
-            bufferedWriter.write(text);
-            bufferedWriter.close();
-            getUndoManager().mark();
-            FileSavedEvent event = new FileSavedEvent(this, null);
-            fireEvent(event);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        projectFile.write(text);
+        getUndoManager().mark();
+        FileSavedEvent event = new FileSavedEvent(this, null);
+        fireEvent(event);
     }
 
     private String extractModuleName(final List<ErlToken> tokenList, final String line) {

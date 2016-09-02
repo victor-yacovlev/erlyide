@@ -18,21 +18,19 @@ package io.github.victoryacovlev.erlyide.project;
 
 import io.github.victoryacovlev.erlyide.erlangtools.ProjectFileRenamedEvent;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.event.Event;
 import javafx.event.EventTarget;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 public abstract class ProjectFile {
     private SimpleStringProperty name;
 
     protected File file;
     private final ErlangProject parent;
+    private EditingInterface editor = null;
 
     protected ProjectFile(File file, ErlangProject parent) {
         this.file = file;
@@ -44,11 +42,61 @@ public abstract class ProjectFile {
         return name;
     }
 
-    private String rename(String newName) {
-        File f = new File(newName);
+    private String rename(String newName, boolean preprocessFile, boolean updateUsages) {
+        String oldName = file.getName();
+        File f = new File(file.getParentFile().getAbsolutePath() + "/" + newName);
         file.renameTo(f);
         file = f;
+        if (preprocessFile) {
+            List<ProjectFileChange> changeList = preprocessToMatchNewName(oldName, newName);
+            if (! changeList.isEmpty()) {
+                applyChanges(changeList);
+            }
+        }
         return file.getName();
+    }
+
+    private void applyChanges(List<ProjectFileChange> changeList) {
+        if (editor != null) {
+            editor.applyChanges(changeList);
+        }
+        else {
+            String source = getContents();
+            StringBuilder builder = new StringBuilder();
+            int prevPos = 0;
+            for (int i=0; i<changeList.size(); ++i) {
+                ProjectFileChange change = changeList.get(i);
+                int changeStart = change.from;
+
+                builder.append(source.substring(prevPos, changeStart));
+
+                int changeLength = change.length;
+                String replacement = change.replacement;
+                builder.append(replacement);
+
+                prevPos = changeStart + changeLength;
+            }
+            builder.append(source.substring(prevPos));
+            String newContents = builder.toString();
+            write(newContents);
+        }
+    }
+
+    protected String getContents() {
+        if (editor!=null) {
+            return editor.getText();
+        }
+        else {
+            return readAll();
+        }
+    }
+
+    public void setEditor(EditingInterface editor) {
+        this.editor = editor;
+    }
+
+    protected List<ProjectFileChange> preprocessToMatchNewName(String oldName, String newName) {
+        return Collections.EMPTY_LIST;
     }
 
     public File getFile() {
@@ -59,8 +107,8 @@ public abstract class ProjectFile {
         return name.get();
     }
 
-    public void setName(String newName) {
-        String shortNewName = rename(newName);
+    public void setName(String newName, boolean preprocessFile, boolean updateUsages) {
+        String shortNewName = rename(newName, preprocessFile, updateUsages);
         name.set(shortNewName);
     }
 
@@ -80,6 +128,23 @@ public abstract class ProjectFile {
             }
         }
         return result;
+    }
+
+    public void write(String contents) {
+        FileOutputStream fs = null;
+        try {
+            fs = new FileOutputStream(file);
+            OutputStreamWriter writer = new OutputStreamWriter(fs, "UTF-8");
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+            bufferedWriter.write(contents);
+            bufferedWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public ErlangProject getParent() {
