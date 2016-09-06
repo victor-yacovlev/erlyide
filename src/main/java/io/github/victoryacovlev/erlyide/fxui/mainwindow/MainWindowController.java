@@ -20,6 +20,7 @@ import com.ericsson.otp.erlang.OtpAuthException;
 import io.github.victoryacovlev.erlyide.erlangtools.*;
 import io.github.victoryacovlev.erlyide.fxui.editor.ErlangCodeArea;
 import io.github.victoryacovlev.erlyide.fxui.logging.*;
+import io.github.victoryacovlev.erlyide.fxui.projectview.FileNameDialogController;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
 import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
@@ -84,6 +85,8 @@ public class MainWindowController implements Initializable {
     private int untitledIndex = 0;
     private ErlangProject erlangProject = null;
     private Node rootNode;
+    private FileNameDialogController fileNameDialogController;
+    private Stage fileNameDialogStage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -231,8 +234,13 @@ public class MainWindowController implements Initializable {
             rootDir = erlangProject.getIncludeDir();
         }
         final String moduleName = generateUntitledModuleName(rootDir, template.getSuffix());
-        ProjectFile projectFile = erlangProject.createNewFile(template, moduleName + template.getSuffix());
-        openProjectFile(projectFile);
+        ErlangFileType ft = (template instanceof ErlangFileTemplate)? ErlangFileType.SourceFile : ErlangFileType.OtherFile;
+        fileNameDialogController.initializeWithSuggestedName(moduleName + template.getSuffix(), rootDir, ft);
+        fileNameDialogStage.showAndWait();
+        if (fileNameDialogController.isAccepted()) {
+            ProjectFile projectFile = erlangProject.createNewFile(template, fileNameDialogController.getEnteredName() + template.getSuffix());
+            openProjectFile(projectFile);
+        }
     }
 
 
@@ -389,7 +397,9 @@ public class MainWindowController implements Initializable {
                 }
             });
         });
-        projectViewController.setMainWindowStage(stage);
+        fileNameDialogStage = projectViewController.setMainWindowStage(stage);
+        fileNameDialogController = projectViewController.getFileNameDialogController();
+
     }
 
 

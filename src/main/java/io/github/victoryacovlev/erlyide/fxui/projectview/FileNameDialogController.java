@@ -16,12 +16,14 @@
 
 package io.github.victoryacovlev.erlyide.fxui.projectview;
 
+import io.github.victoryacovlev.erlyide.project.ErlangFileType;
 import io.github.victoryacovlev.erlyide.project.ErlangSourceFile;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -38,21 +40,23 @@ public class FileNameDialogController {
     }
 
     private ProjectFileItem projectFileItem;
+    private ErlangFileType fileType;
     private String oldName;
     private Stage stage;
     private boolean accepted;
     private Mode mode;
+    private File root;
 
     @FXML private Label suffix;
     @FXML private TextField newName;
     @FXML private Button btnOK;
     @FXML private Button btnCancel;
     @FXML private CheckBox preprocessItself;
-    @FXML private CheckBox findUsages;
+//    @FXML private CheckBox findUsages;
     @FXML private Label error;
 
 
-    void initializeWithItem(ProjectFileItem projectFileItem) {
+    public void initializeWithItem(ProjectFileItem projectFileItem) {
         this.projectFileItem = projectFileItem;
         oldName = projectFileItem.getValue();
         accepted = false;
@@ -65,7 +69,11 @@ public class FileNameDialogController {
         setMode(Mode.RenameExisitingFile);
     }
 
-    void initializeWithSuggestedName(String fileName, File root) {
+    public void initializeWithSuggestedName(String fileName, File root, ErlangFileType fileType) {
+        setMode(Mode.CreateNewFile);
+        this.root = root;
+        this.fileType = fileType;
+
         oldName = fileName;
         int dotPos = oldName.indexOf('.');
         String name = oldName.substring(0, dotPos);
@@ -73,7 +81,6 @@ public class FileNameDialogController {
         suffix.setText(suff);
         newName.setText(name);
         error.setText("");
-        setMode(Mode.CreateNewFile);
     }
 
     void initialize() {
@@ -84,7 +91,21 @@ public class FileNameDialogController {
         this.mode = mode;
         if (Mode.CreateNewFile == mode) {
             preprocessItself.setVisible(false);
-            findUsages.setVisible(false);
+//            findUsages.setVisible(false);
+            stage.setTitle("New file");
+            stage.setMinWidth(470);
+            stage.setMinHeight(160);
+            stage.setMaxWidth(470);
+            stage.setMaxHeight(160);
+        }
+        else {
+            preprocessItself.setVisible(true);
+//            findUsages.setVisible(false);  // Not implemented yet
+            stage.setTitle("Rename file");
+            stage.setMinWidth(470);
+            stage.setMinHeight(160);
+            stage.setMaxWidth(470);
+            stage.setMaxHeight(160);
         }
     }
 
@@ -105,7 +126,19 @@ public class FileNameDialogController {
             btnOK.setDisable(true);
             return;
         }
-        if (this.projectFileItem.getProjectFile() instanceof ErlangSourceFile) {
+        ErlangFileType ft;
+        if (Mode.CreateNewFile == mode) {
+            ft = fileType;
+        }
+        else {
+            if (projectFileItem.getProjectFile() instanceof ErlangSourceFile) {
+                ft = ErlangFileType.SourceFile;
+            }
+            else {
+                ft = ErlangFileType.OtherFile;
+            }
+        }
+        if (ErlangFileType.SourceFile==ft) {
             boolean validErlangName = true;
             char first = name.charAt(0);
             if (first != '_' && (first < 'a' || first > 'z')) {
@@ -123,7 +156,7 @@ public class FileNameDialogController {
                 return;
             }
         }
-        File parentDir = new File(projectFileItem.getProjectFile().getFile().getParent());
+        File parentDir = Mode.CreateNewFile==mode ? root : new File(projectFileItem.getProjectFile().getFile().getParent());
         File newFile = new File(parentDir.getAbsolutePath() + "/" + name + suffix.getText());
         if (newFile.exists()) {
             if (!newFile.getName().equals(oldName)) {
@@ -153,6 +186,7 @@ public class FileNameDialogController {
     }
 
     public boolean isUpdateUsagesSelected() {
-        return findUsages.isSelected();
+//        return findUsages.isSelected();
+        return false;
     }
 }

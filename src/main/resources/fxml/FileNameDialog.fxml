@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="470.0" spacing="8.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.victoryacovlev.erlyide.fxui.projectview.FileNameDialogController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="129.0" prefWidth="470.0" spacing="8.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.victoryacovlev.erlyide.fxui.projectview.FileNameDialogController">
    <children>
       <HBox prefHeight="42.0" prefWidth="371.0">
          <children>
@@ -19,15 +19,14 @@
          </children>
       </HBox>
       <CheckBox fx:id="preprocessItself" mnemonicParsing="false" selected="true" text="Preprocess file itself to match new name" />
-      <CheckBox fx:id="findUsages" mnemonicParsing="false" text="Find usages in project and rename them too" />
-      <Label fx:id="error" alignment="CENTER" prefHeight="16.0" prefWidth="452.0" text="Error message in case if name not valid">
+      <Label fx:id="error" alignment="CENTER" prefHeight="16.0" prefWidth="456.0" text="Error message in case if name not valid">
          <font>
             <Font name="System Bold" size="13.0" />
          </font></Label>
       <ButtonBar prefHeight="40.0" prefWidth="200.0">
         <buttons>
-          <Button fx:id="btnOK" mnemonicParsing="false" onAction="#okPressed" text="OK" />
-            <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#cancelPressed" text="Cancel" />
+          <Button fx:id="btnOK" defaultButton="true" mnemonicParsing="false" onAction="#okPressed" text="OK" />
+            <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" onAction="#cancelPressed" text="Cancel" />
         </buttons>
       </ButtonBar>
    </children>

@@ -17,5 +17,5 @@
 package io.github.victoryacovlev.erlyide.project;
 
 public enum ErlangFileType {
-    SourceFile, IncludeFile, ConfigFile
+    SourceFile, IncludeFile, ConfigFile, OtherFile
 }

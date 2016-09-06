@@ -76,7 +76,7 @@ public class ProjectViewController {
         this.mainWindowController = mainWindowController;
     }
 
-    private void initializeRenameDialog() {
+    private Stage initializeRenameDialog() {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/fxml/FileNameDialog.fxml"));
         renameDialogStage = new Stage();
@@ -87,19 +87,15 @@ public class ProjectViewController {
         }
         fileNameDialogController = (FileNameDialogController) loader.getController();
         fileNameDialogController.setStage(renameDialogStage);
-        fileNameDialogController.initialize();
-        renameDialogStage.setTitle("Rename file");
         renameDialogStage.initModality(Modality.WINDOW_MODAL);
         renameDialogStage.initOwner(mainWindowStage);
-        renameDialogStage.setMinWidth(470);
-        renameDialogStage.setMinHeight(180);
-        renameDialogStage.setMaxWidth(470);
-        renameDialogStage.setMaxHeight(180);
+        fileNameDialogController.initialize();
+        return renameDialogStage;
     }
 
-    public void setMainWindowStage(Stage stage) {
+    public Stage setMainWindowStage(Stage stage) {
         mainWindowStage = stage;
-        initializeRenameDialog();
+        return initializeRenameDialog();
     }
 
     private void createContextMenus() {
@@ -153,5 +149,8 @@ public class ProjectViewController {
         }
     }
 
+    public FileNameDialogController getFileNameDialogController() {
+        return fileNameDialogController;
+    }
 
 }
