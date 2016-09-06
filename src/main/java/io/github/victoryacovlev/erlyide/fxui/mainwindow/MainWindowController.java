@@ -27,6 +27,8 @@ import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
 import io.github.victoryacovlev.erlyide.project.*;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -78,6 +80,7 @@ public class MainWindowController implements Initializable {
     @FXML private Label showProjectButton;
     @FXML private TreeView projectView;
     @FXML private Menu menuFileNew;
+    @FXML private MenuItem enterPresentationModeMenuItem;
 
     private ProjectViewController projectViewController;
 
@@ -195,7 +198,16 @@ public class MainWindowController implements Initializable {
     public void setPresentationMode(boolean presentationMode) {
         clock.setVisible(presentationMode);
         stage.setFullScreen(presentationMode);
-
+        enterPresentationModeMenuItem.setText(
+                presentationMode
+                        ? "Leave presentation mode"
+                        : "Enter presentation mode"
+        );
+        terminal.setPresentationMode(presentationMode);
+        for (int i=1; i<tabPane.getTabs().size(); ++i) {
+            EditorTab editorTab = (EditorTab) (tabPane.getTabs().get(i));
+            editorTab.getEditor().setPresentationMode(presentationMode);
+        }
     }
 
     @FXML
@@ -386,17 +398,19 @@ public class MainWindowController implements Initializable {
                 }
             });
         });
-        stage.maximizedProperty().addListener((observable, oldValue, newValue) -> {
-            final boolean bottomVisible = isIssuesVisible() || isEventsVisible();
-            Platform.runLater(() -> {
-                if (bottomVisible) {
-
-                }
-                else {
-                    setBottomPaneVisible(false, false);
-                }
-            });
-        });
+        stage.fullScreenExitKeyProperty().set(KeyCombination.NO_MATCH);
+//        ChangeListener<Boolean> maxListener = (observable, oldValue, newValue) -> {
+//            final boolean bottomVisible = MainWindowController.this.isIssuesVisible() || MainWindowController.this.isEventsVisible();
+//            Platform.runLater(() -> {
+//                if (bottomVisible) {
+//
+//                } else {
+//                    MainWindowController.this.setBottomPaneVisible(false, false);
+//                }
+//            });
+//        };
+//        stage.maximizedProperty().addListener(maxListener);
+//        stage.fullScreenProperty().addListener(maxListener);
         fileNameDialogStage = projectViewController.setMainWindowStage(stage);
         fileNameDialogController = projectViewController.getFileNameDialogController();
 
@@ -498,7 +512,9 @@ public class MainWindowController implements Initializable {
         if (!issuesVisible && !eventsVisible) {
             double dividerPosition = bottomSplitPane.getDividerPositions()[0];
             preferences.putDouble(PREFS_WINDOW_BOTTOM_DIVIDER_POSITION, dividerPosition);
-            bottomSplitPane.getDividers().get(0).setPosition(1.0);
+            if (dividerPosition < 1.0) {
+                bottomSplitPane.getDividers().get(0).setPosition(1.0);
+            }
             bottomSplitPane.lookupAll(".split-pane-divider").stream().forEach((Node div) -> {
                 Node parent = div.parentProperty().get();
                 if (parent == bottomSplitPane) {
