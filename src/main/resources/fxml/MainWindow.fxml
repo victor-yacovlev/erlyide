@@ -26,7 +26,14 @@
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
-                        <Menu fx:id="menuFileNew" mnemonicParsing="false" text="New" />
+                        <Menu fx:id="menuFileNew" mnemonicParsing="false" text="New">
+                           <items>
+                              <MenuItem fx:id="fileNewDefaultTemplate" mnemonicParsing="false" text="Default">
+                                 <accelerator>
+                                    <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                 </accelerator>
+                              </MenuItem>
+                           </items></Menu>
                         <MenuItem disable="true" mnemonicParsing="false" text="Open...">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />

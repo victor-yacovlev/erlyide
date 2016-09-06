@@ -81,6 +81,7 @@ public class MainWindowController implements Initializable {
     @FXML private TreeView projectView;
     @FXML private Menu menuFileNew;
     @FXML private MenuItem enterPresentationModeMenuItem;
+    @FXML private MenuItem fileNewDefaultTemplate;
 
     private ProjectViewController projectViewController;
 
@@ -128,20 +129,22 @@ public class MainWindowController implements Initializable {
 
         projectViewController = new ProjectViewController(projectView, this);
 
-        for (ErlangFileTemplate t : ErlangFileTemplate.getTemplates()) {
+        for (int i=0; i<ErlangFileTemplate.getTemplates().size(); ++i) {
+            ErlangFileTemplate t = ErlangIncludeFileTemplate.getTemplates().get(i);
             if (t==null) {
                 menuFileNew.getItems().add(new SeparatorMenuItem());
             }
             else {
-                MenuItem menuItem = new MenuItem(t.getName());
+                MenuItem menuItem = i==0? fileNewDefaultTemplate : new MenuItem(t.getName());
                 menuItem.setOnAction(event -> {
                     fileNew(t);
                 });
-                if (menuFileNew.getItems().size() == 0) {
-                    // First item is default - can be accessed by Ctrl+N
-                    menuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+                if (menuItem != fileNewDefaultTemplate) {
+                    menuFileNew.getItems().add(menuItem);
                 }
-                menuFileNew.getItems().add(menuItem);
+                else {
+                    fileNewDefaultTemplate.setText(t.getName());
+                }
             }
         }
     }
