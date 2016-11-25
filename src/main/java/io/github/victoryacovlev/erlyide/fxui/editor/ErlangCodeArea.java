@@ -16,6 +16,7 @@
 
 package io.github.victoryacovlev.erlyide.fxui.editor;
 
+import com.sun.xml.internal.ws.util.StringUtils;
 import io.github.victoryacovlev.erlyide.erlangtools.*;
 import io.github.victoryacovlev.erlyide.fxui.mainwindow.FontSizeAjuctable;
 import io.github.victoryacovlev.erlyide.project.*;
@@ -23,6 +24,9 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCharacterCombination;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Font;
 import javafx.stage.Popup;
@@ -153,7 +157,51 @@ public class ErlangCodeArea extends CodeArea implements FontSizeAjuctable, Editi
 
         addEventHandler(ProjectBuildFinishedEvent.PROJECT_BUILD_FINISHED, this::handleProjectBuildFinished);
 
+        addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (KeyCode.TAB == event.getCode()) {
+                    insertText(getCaretPosition(), "    ");
+                    event.consume();
+                }
+                else if (KeyCode.ENTER == event.getCode()) {
+                    final String currentLine = getText(getCurrentParagraph());
+                    String toInsert = "\n";
+                    for (int i=0; i<currentLine.length(); ++i) {
+                        if (' ' == currentLine.charAt(i)) {
+                            toInsert += " ";
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    insertText(getCaretPosition(), toInsert);
+                    event.consume();
+                }
+                else if (KeyCode.BACK_SPACE == event.getCode()) {
+                    final String currentLine = getText(getCurrentParagraph());
+                    int col = getCaretColumn();
+                    final String textBefore = currentLine.substring(0, col);
+                    if (textBefore.trim().isEmpty() && col > 0) {
+                        // Only leading spaces -- delete to previous indent position
+                        int currentIndentLevel = col / 4;
+                        int prevIndentLevel = Integer.max(0, currentIndentLevel - 1);
+                        int newColPos = prevIndentLevel * 4;
+                        int diff = col - newColPos;
+                        for (int i=0; i<diff; ++i) {
+                            deletePreviousChar();
+                        }
+                    }
+                    else {
+                        deletePreviousChar();
+                    }
+                    event.consume();
+                }
+            }
+        });
     }
+
+
 
     private void handleProjectBuildFinished(ProjectBuildFinishedEvent event) {
         synchronized (errors) {
