@@ -25,6 +25,7 @@ import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectTreeItem;
 import io.github.victoryacovlev.erlyide.fxui.projectview.ProjectViewController;
 import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 import io.github.victoryacovlev.erlyide.fxui.terminal.TerminalFlavouredTextArea;
+import io.github.victoryacovlev.erlyide.fxui.workspacechooser.WokrspaceChooserController;
 import io.github.victoryacovlev.erlyide.project.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -84,6 +85,12 @@ public class MainWindowController implements Initializable {
     @FXML private MenuItem fileNewDefaultTemplate;
 
     private ProjectViewController projectViewController;
+
+    public void setWokrspaceChooserController(WokrspaceChooserController wokrspaceChooserController) {
+        this.wokrspaceChooserController = wokrspaceChooserController;
+    }
+
+    private WokrspaceChooserController wokrspaceChooserController;
 
     private Stage stage;
     private int untitledIndex = 0;
@@ -255,6 +262,19 @@ public class MainWindowController implements Initializable {
         if (fileNameDialogController.isAccepted()) {
             ProjectFile projectFile = erlangProject.createNewFile(template, fileNameDialogController.getEnteredName() + template.getSuffix());
             openProjectFile(projectFile);
+        }
+    }
+
+    @FXML public void switchWorkspace() throws InterruptedException, IOException, OtpAuthException {
+        if (wokrspaceChooserController.execDialog(stage)) {
+            saveAll();
+            tabPane.getTabs().remove(1, tabPane.getTabs().size()-1);
+            final String workspaceDir = wokrspaceChooserController.getSelectedWorkspacePath();
+            terminal.appendTextFromCommandProcessor("\nRestarting Erlang with new workspace: " + workspaceDir + "...\n");
+            ErlangVM vm = ErlangVM.restart(workspaceDir);
+            Interpreter interpreter = vm.getInterpreter();
+            terminal.setCommandProcessor(interpreter);
+            setErlangProject(new ErlangProject(workspaceDir, null));
         }
     }
 

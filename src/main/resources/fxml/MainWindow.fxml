@@ -50,7 +50,7 @@
                            </accelerator>
                         </MenuItem>
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Switch workspace or project..." />
+                        <MenuItem mnemonicParsing="false" onAction="#switchWorkspace" text="Switch workspace or project..." />
                         <SeparatorMenuItem mnemonicParsing="false">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />

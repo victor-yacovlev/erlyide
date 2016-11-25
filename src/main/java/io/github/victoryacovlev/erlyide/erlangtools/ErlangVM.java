@@ -50,9 +50,21 @@ public class ErlangVM {
 
     public static ErlangVM getInstance() throws IOException, OtpAuthException, InterruptedException {
         if (null == instance) {
-            instance = new ErlangVM();
+            instance = new ErlangVM(null);
         }
         return instance;
+    }
+
+    public static ErlangVM restart(final String workspaceDir) throws InterruptedException, IOException, OtpAuthException {
+        if (null != instance) {
+            instance.shutdown();
+        }
+        instance = new ErlangVM(workspaceDir);
+        return instance;
+    }
+
+    public void shutdown() {
+        interpreter.terminate();
     }
 
     public String getHelpersRootPath() {
@@ -64,9 +76,12 @@ public class ErlangVM {
         return helpersRoot;
     }
 
-    private ErlangVM() throws IOException, InterruptedException, OtpAuthException {
+    private ErlangVM(String workspaceDir) throws IOException, InterruptedException, OtpAuthException {
         unpackHelpersSources();
-        interpreter = new Interpreter(new String[] {
+        if (null == workspaceDir) {
+            workspaceDir = System.getProperty("user.dir");
+        }
+        interpreter = new Interpreter(workspaceDir, new String[] {
                 "erl",
                 "-name", serverName+"@localhost",
                 "-setcookie", cookie,

@@ -27,11 +27,11 @@ public class Interpreter extends CommandProcessor {
     private IOHelper stdoutHandler;
     private IOHelper stderrHandler;
     private boolean justStarted = true;
+    private Boolean pauseSupervisor = Boolean.FALSE;
 
 
-    public Interpreter(final String[] commandLineArgs) {
+    public Interpreter(final String workspaceDir, final String[] commandLineArgs) {
         super();
-        final String workspaceDir = System.getProperty("user.dir");
         processBuilder = new ProcessBuilder(commandLineArgs);
         processBuilder.directory(new File(workspaceDir));
         new Supervisor();
@@ -43,6 +43,9 @@ public class Interpreter extends CommandProcessor {
             justStarted = true;
             stdoutHandler = new IOHelper(1, process.getInputStream());
             stderrHandler = new IOHelper(2, process.getErrorStream());
+            synchronized (pauseSupervisor) {
+                pauseSupervisor = Boolean.FALSE;
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,6 +82,41 @@ public class Interpreter extends CommandProcessor {
             } catch (InterruptedException e) {
                 break;
             }
+        }
+    }
+
+    public void terminate() {
+        if (null != process) {
+            stop();
+            synchronized (pauseSupervisor) {
+                pauseSupervisor = Boolean.TRUE;
+            }
+//            try {
+//                byte sequenceToQuit [] = {0x07 /* Ctrl+G */, 'q', 0x0A /* Enter */};
+//                process.getOutputStream().write(sequenceToQuit);
+//                process.getOutputStream().flush();
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            int maxChecks = 100;
+//            boolean correctlyClosed = false;
+//            for (int i=maxChecks; i>0; --i) {
+//                if (process.isAlive()) {
+//                    try {
+//                        Thread.sleep(50);
+//                    } catch (InterruptedException e) {
+//                        break;
+//                    }
+//                }
+//                else {
+//                    correctlyClosed = true;
+//                    break;
+//                }
+//            }
+//            if (!correctlyClosed) {
+                process.destroy();
+//            }
         }
     }
 
@@ -129,14 +167,21 @@ public class Interpreter extends CommandProcessor {
         Supervisor() {
             new Thread(() -> {
                 while(true) {
+                    boolean ignore = false;
+
+                    synchronized (pauseSupervisor) {
+                        ignore = pauseSupervisor.booleanValue();
+                    }
                     if (null == process || !process.isAlive()) {
-                        start();
+                        if (!ignore)
+                            start();
                     }
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         break;
                     }
+
                 }
             }).start();
         }

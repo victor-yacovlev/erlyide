@@ -26,9 +26,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.*;
 
 public class TerminalFlavouredTextArea extends TextArea implements FontSizeAjuctable {
     private CommandProcessor commandProcessor = null;
@@ -128,8 +126,11 @@ public class TerminalFlavouredTextArea extends TextArea implements FontSizeAjuct
                 positionCaret(getLength());
             }
             else if (event.getCode()!=KeyCode.C) {
-                // Disallow all actions but Copy (Ctrl+C) and Paste (Ctrl+V - handled above)
-                event.consume();
+                List<KeyCode> allowedCodes = Arrays.asList(KeyCode.C, KeyCode.N, KeyCode.S, KeyCode.W, KeyCode.O);
+                KeyCode code = event.getCode();
+                if (!allowedCodes.contains(code)) {
+                    event.consume();
+                }
             }
         }
     }
