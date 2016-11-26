@@ -21,8 +21,8 @@ import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
-import java.util.List;
-import java.util.Scanner;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -85,12 +85,18 @@ public class ErlangVM {
         if (null == workspaceDir) {
             workspaceDir = System.getProperty("user.dir");
         }
-        interpreter = new Interpreter(workspaceDir, new String[] {
+        List<String> pas = getHelperProgramPaths();
+        String[] baseArgs = new String[] {
                 "erl",
                 "-name", serverName+"@localhost",
                 "-setcookie", cookie,
-                "-pa", getHelpersRootPath()+"/ebin"
-        });
+        };
+        String[] allArgs = Arrays.copyOf(baseArgs,baseArgs.length+pas.size()*2);
+        for (int i=0; i<pas.size(); ++i) {
+            allArgs[baseArgs.length + i*2] = "-pa";
+            allArgs[baseArgs.length + i*2 + 1] = pas.get(i);
+        }
+        interpreter = new Interpreter(workspaceDir, allArgs);
         interpreter.waitForStarted();
         Thread.sleep(1000);
         client = new OtpSelf(clientName+"@localhost", cookie);
@@ -178,6 +184,22 @@ public class ErlangVM {
         return msg.elementAt(1);
     }
 
+    public List<String> getHelperProgramPaths() {
+        List<String> result = new LinkedList<>();
+        result.add(getHelpersRootPath()+"/ebin");
+        final String helpersAppsPath = getHelpersRootPath() + "/apps";
+        File helpersAppsTargetDir = new File(helpersAppsPath);
+        for (File entry : helpersAppsTargetDir.listFiles()) {
+            if (entry.isDirectory()) {
+                File ebinSubDir = new File(entry.getAbsoluteFile() + "/ebin");
+                if (ebinSubDir.exists()) {
+                    result.add(ebinSubDir.getAbsolutePath());
+                }
+            }
+        }
+        return result;
+    }
+
     private void unpackHelperPackages() {
         final String helpersAppsPath = getHelpersRootPath() + "/apps";
         File helpersAppsTargetDir = new File(helpersAppsPath);
@@ -256,4 +278,6 @@ public class ErlangVM {
         }
 
     }
+
+
 }
