@@ -21,7 +21,10 @@ import io.github.victoryacovlev.erlyide.fxui.terminal.Interpreter;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
+import java.util.List;
 import java.util.Scanner;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 public class ErlangVM {
@@ -78,6 +81,7 @@ public class ErlangVM {
 
     private ErlangVM(String workspaceDir) throws IOException, InterruptedException, OtpAuthException {
         unpackHelpersSources();
+        unpackHelperPackages();
         if (null == workspaceDir) {
             workspaceDir = System.getProperty("user.dir");
         }
@@ -94,6 +98,9 @@ public class ErlangVM {
         connection = client.connect(server);
         compileAndLoadHelpers();
     }
+
+
+
 
     private void compileAndLoadHelpers() {
         final String modules[] = new String[] {
@@ -169,6 +176,56 @@ public class ErlangVM {
         connection.sendRPC(module, function, arguments);
         OtpErlangTuple msg = (OtpErlangTuple) connection.receiveMsg().getMsg();
         return msg.elementAt(1);
+    }
+
+    private void unpackHelperPackages() {
+        final String helpersAppsPath = getHelpersRootPath() + "/apps";
+        File helpersAppsTargetDir = new File(helpersAppsPath);
+        helpersAppsTargetDir.mkdirs();
+        final String packages[] = new String[] {
+                "rebar3"
+        };
+        for (final String packageFileName : packages) {
+            InputStream packageInputStream = getClass().getResourceAsStream("/erlang_helper_modules/pkgs/"+packageFileName);
+            try {
+                // Find start position of ZIP stream in escript
+                packageInputStream.mark(1024);
+                byte[] header = new byte[512];
+                int headerSize = packageInputStream.read(header, 0, 512);
+                long startPos = 0;
+                for (int i=3; i<headerSize; ++i) {
+                    byte a = header[i-3];
+                    byte b = header[i-2];
+                    byte c = header[i-1];
+                    byte d = header[i-0];
+                    boolean magic1 = 0x50==a && 0x4B==b && 0x03==c && 0x04==d;
+                    boolean magic2 = 0x50==a && 0x4B==b && 0x05==c && 0x06==d;
+                    boolean magic3 = 0x50==a && 0x4B==b && 0x07==c && 0x08==d;
+                    if (magic1 || magic2 || magic3) {
+                        startPos = i-3;
+                        break;
+                    }
+                }
+                packageInputStream.reset();
+                packageInputStream.skip(startPos);
+                ZipInputStream zipInputStream = new ZipInputStream(packageInputStream);
+                ZipEntry zipEntry;
+                while (null!=(zipEntry = zipInputStream.getNextEntry())) {
+                    String outFilePath = helpersAppsTargetDir.getAbsolutePath()+"/"+zipEntry.getName();
+                    File outFile = new File(outFilePath);
+                    File fileDir = outFile.getParentFile();
+                    fileDir.mkdirs();
+                    final int BufferSize = (int) zipEntry.getSize();
+                    FileOutputStream writer = new FileOutputStream(outFile);
+                    byte[] buffer = new byte[BufferSize];
+                    zipInputStream.read(buffer, 0, BufferSize);
+                    writer.write(buffer);
+                    writer.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void unpackHelpersSources() {
