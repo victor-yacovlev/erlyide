@@ -103,6 +103,7 @@ public class ErlangVM {
         server = new OtpPeer(serverName+"@localhost");
         connection = client.connect(server);
         compileAndLoadHelpers();
+        System.gc();
     }
 
 
@@ -233,15 +234,26 @@ public class ErlangVM {
                 ZipInputStream zipInputStream = new ZipInputStream(packageInputStream);
                 ZipEntry zipEntry;
                 while (null!=(zipEntry = zipInputStream.getNextEntry())) {
+                    long crc = zipEntry.getCrc();
                     String outFilePath = helpersAppsTargetDir.getAbsolutePath()+"/"+zipEntry.getName();
                     File outFile = new File(outFilePath);
                     File fileDir = outFile.getParentFile();
                     fileDir.mkdirs();
-                    final int BufferSize = (int) zipEntry.getSize();
+                    final int entryUnpackedSize = (int) zipEntry.getSize();
+                    if (outFile.exists()) {
+                        long fsize = outFile.length();
+                        if (fsize == entryUnpackedSize) {
+                            continue;
+                        }
+                    }
                     FileOutputStream writer = new FileOutputStream(outFile);
-                    byte[] buffer = new byte[BufferSize];
-                    zipInputStream.read(buffer, 0, BufferSize);
-                    writer.write(buffer);
+                    byte[] buffer = new byte[1024];
+                    int bytesReadTotal = 0;
+                    while (bytesReadTotal < entryUnpackedSize) {
+                        int bytesRead = zipInputStream.read(buffer, 0, 1024);
+                        bytesReadTotal += bytesRead;
+                        writer.write(buffer, 0, bytesRead);
+                    }
                     writer.close();
                 }
             } catch (IOException e) {
